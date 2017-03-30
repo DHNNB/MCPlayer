@@ -15,6 +15,14 @@
 		D891348B1E8CA4D8004E0C27 /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = D89134891E8CA4D8004E0C27 /* LaunchScreen.storyboard */; };
 		D89134961E8CA4D8004E0C27 /* MCPlayerTests.m in Sources */ = {isa = PBXBuildFile; fileRef = D89134951E8CA4D8004E0C27 /* MCPlayerTests.m */; };
 		D89134A11E8CA4D8004E0C27 /* MCPlayerUITests.m in Sources */ = {isa = PBXBuildFile; fileRef = D89134A01E8CA4D8004E0C27 /* MCPlayerUITests.m */; };
+		D89134B11E8CA7BB004E0C27 /* MCOperation.m in Sources */ = {isa = PBXBuildFile; fileRef = D89134B01E8CA7BB004E0C27 /* MCOperation.m */; };
+		D89134B51E8CACD6004E0C27 /* MCResourceLoader.m in Sources */ = {isa = PBXBuildFile; fileRef = D89134B41E8CACD6004E0C27 /* MCResourceLoader.m */; };
+		D89134B71E8CADCE004E0C27 /* MobileCoreServices.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = D89134B61E8CADCE004E0C27 /* MobileCoreServices.framework */; };
+		D89134B91E8CAE09004E0C27 /* AVFoundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = D89134B81E8CAE09004E0C27 /* AVFoundation.framework */; };
+		D89134BC1E8CAFA4004E0C27 /* MCPlayer.m in Sources */ = {isa = PBXBuildFile; fileRef = D89134BB1E8CAFA4004E0C27 /* MCPlayer.m */; };
+		D89134BF1E8CB224004E0C27 /* MCPath.m in Sources */ = {isa = PBXBuildFile; fileRef = D89134BE1E8CB224004E0C27 /* MCPath.m */; };
+		D89134C21E8CB2D6004E0C27 /* NSString+MD5.m in Sources */ = {isa = PBXBuildFile; fileRef = D89134C11E8CB2D6004E0C27 /* NSString+MD5.m */; };
+		E468CA06D1BC7C9CA02BA68C /* Pods_MCPlayer.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = C1474D5C98B5DE19EDA6FC37 /* Pods_MCPlayer.framework */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -35,6 +43,9 @@
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
+		5BD93EB9631831D74F34C7AA /* Pods-MCPlayer.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-MCPlayer.debug.xcconfig"; path = "Pods/Target Support Files/Pods-MCPlayer/Pods-MCPlayer.debug.xcconfig"; sourceTree = "<group>"; };
+		A16D6778B408717158367A43 /* Pods-MCPlayer.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-MCPlayer.release.xcconfig"; path = "Pods/Target Support Files/Pods-MCPlayer/Pods-MCPlayer.release.xcconfig"; sourceTree = "<group>"; };
+		C1474D5C98B5DE19EDA6FC37 /* Pods_MCPlayer.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_MCPlayer.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		D89134781E8CA4D8004E0C27 /* MCPlayer.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = MCPlayer.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		D891347C1E8CA4D8004E0C27 /* main.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = main.m; sourceTree = "<group>"; };
 		D891347E1E8CA4D8004E0C27 /* AppDelegate.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = AppDelegate.h; sourceTree = "<group>"; };
@@ -51,6 +62,18 @@
 		D891349C1E8CA4D8004E0C27 /* MCPlayerUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = MCPlayerUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		D89134A01E8CA4D8004E0C27 /* MCPlayerUITests.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = MCPlayerUITests.m; sourceTree = "<group>"; };
 		D89134A21E8CA4D8004E0C27 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		D89134AF1E8CA7BB004E0C27 /* MCOperation.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MCOperation.h; sourceTree = "<group>"; };
+		D89134B01E8CA7BB004E0C27 /* MCOperation.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = MCOperation.m; sourceTree = "<group>"; };
+		D89134B31E8CACD6004E0C27 /* MCResourceLoader.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MCResourceLoader.h; sourceTree = "<group>"; };
+		D89134B41E8CACD6004E0C27 /* MCResourceLoader.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = MCResourceLoader.m; sourceTree = "<group>"; };
+		D89134B61E8CADCE004E0C27 /* MobileCoreServices.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = MobileCoreServices.framework; path = System/Library/Frameworks/MobileCoreServices.framework; sourceTree = SDKROOT; };
+		D89134B81E8CAE09004E0C27 /* AVFoundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = AVFoundation.framework; path = System/Library/Frameworks/AVFoundation.framework; sourceTree = SDKROOT; };
+		D89134BA1E8CAFA4004E0C27 /* MCPlayer.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MCPlayer.h; sourceTree = "<group>"; };
+		D89134BB1E8CAFA4004E0C27 /* MCPlayer.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = MCPlayer.m; sourceTree = "<group>"; };
+		D89134BD1E8CB224004E0C27 /* MCPath.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MCPath.h; sourceTree = "<group>"; };
+		D89134BE1E8CB224004E0C27 /* MCPath.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = MCPath.m; sourceTree = "<group>"; };
+		D89134C01E8CB2D6004E0C27 /* NSString+MD5.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "NSString+MD5.h"; sourceTree = "<group>"; };
+		D89134C11E8CB2D6004E0C27 /* NSString+MD5.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "NSString+MD5.m"; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -58,6 +81,9 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				D89134B91E8CAE09004E0C27 /* AVFoundation.framework in Frameworks */,
+				D89134B71E8CADCE004E0C27 /* MobileCoreServices.framework in Frameworks */,
+				E468CA06D1BC7C9CA02BA68C /* Pods_MCPlayer.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -78,6 +104,25 @@
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
+		4A4B8C4F2BDB635162228174 /* Pods */ = {
+			isa = PBXGroup;
+			children = (
+				5BD93EB9631831D74F34C7AA /* Pods-MCPlayer.debug.xcconfig */,
+				A16D6778B408717158367A43 /* Pods-MCPlayer.release.xcconfig */,
+			);
+			name = Pods;
+			sourceTree = "<group>";
+		};
+		95B2CC4DA6E5F80ED5FE424A /* Frameworks */ = {
+			isa = PBXGroup;
+			children = (
+				D89134B81E8CAE09004E0C27 /* AVFoundation.framework */,
+				D89134B61E8CADCE004E0C27 /* MobileCoreServices.framework */,
+				C1474D5C98B5DE19EDA6FC37 /* Pods_MCPlayer.framework */,
+			);
+			name = Frameworks;
+			sourceTree = "<group>";
+		};
 		D891346F1E8CA4D8004E0C27 = {
 			isa = PBXGroup;
 			children = (
@@ -85,6 +130,8 @@
 				D89134941E8CA4D8004E0C27 /* MCPlayerTests */,
 				D891349F1E8CA4D8004E0C27 /* MCPlayerUITests */,
 				D89134791E8CA4D8004E0C27 /* Products */,
+				4A4B8C4F2BDB635162228174 /* Pods */,
+				95B2CC4DA6E5F80ED5FE424A /* Frameworks */,
 			);
 			sourceTree = "<group>";
 		};
@@ -101,6 +148,8 @@
 		D891347A1E8CA4D8004E0C27 /* MCPlayer */ = {
 			isa = PBXGroup;
 			children = (
+				D89134B21E8CACA2004E0C27 /* MCPlayer */,
+				D89134AE1E8CA799004E0C27 /* MCOperation */,
 				D891347E1E8CA4D8004E0C27 /* AppDelegate.h */,
 				D891347F1E8CA4D8004E0C27 /* AppDelegate.m */,
 				D89134811E8CA4D8004E0C27 /* ViewController.h */,
@@ -140,6 +189,30 @@
 			path = MCPlayerUITests;
 			sourceTree = "<group>";
 		};
+		D89134AE1E8CA799004E0C27 /* MCOperation */ = {
+			isa = PBXGroup;
+			children = (
+				D89134AF1E8CA7BB004E0C27 /* MCOperation.h */,
+				D89134B01E8CA7BB004E0C27 /* MCOperation.m */,
+			);
+			path = MCOperation;
+			sourceTree = "<group>";
+		};
+		D89134B21E8CACA2004E0C27 /* MCPlayer */ = {
+			isa = PBXGroup;
+			children = (
+				D89134B31E8CACD6004E0C27 /* MCResourceLoader.h */,
+				D89134B41E8CACD6004E0C27 /* MCResourceLoader.m */,
+				D89134BA1E8CAFA4004E0C27 /* MCPlayer.h */,
+				D89134BB1E8CAFA4004E0C27 /* MCPlayer.m */,
+				D89134BD1E8CB224004E0C27 /* MCPath.h */,
+				D89134BE1E8CB224004E0C27 /* MCPath.m */,
+				D89134C01E8CB2D6004E0C27 /* NSString+MD5.h */,
+				D89134C11E8CB2D6004E0C27 /* NSString+MD5.m */,
+			);
+			path = MCPlayer;
+			sourceTree = "<group>";
+		};
 /* End PBXGroup section */
 
 /* Begin PBXNativeTarget section */
@@ -147,9 +220,12 @@
 			isa = PBXNativeTarget;
 			buildConfigurationList = D89134A51E8CA4D8004E0C27 /* Build configuration list for PBXNativeTarget "MCPlayer" */;
 			buildPhases = (
+				81CD9101726E0ADE1845B9E2 /* [CP] Check Pods Manifest.lock */,
 				D89134741E8CA4D8004E0C27 /* Sources */,
 				D89134751E8CA4D8004E0C27 /* Frameworks */,
 				D89134761E8CA4D8004E0C27 /* Resources */,
+				60B19DE2BF5D15765F9C69A0 /* [CP] Embed Pods Frameworks */,
+				F700F221CD2678AA4DA90635 /* [CP] Copy Pods Resources */,
 			);
 			buildRules = (
 			);
@@ -271,14 +347,67 @@
 		};
 /* End PBXResourcesBuildPhase section */
 
+/* Begin PBXShellScriptBuildPhase section */
+		60B19DE2BF5D15765F9C69A0 /* [CP] Embed Pods Frameworks */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputPaths = (
+			);
+			name = "[CP] Embed Pods Frameworks";
+			outputPaths = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "\"${SRCROOT}/Pods/Target Support Files/Pods-MCPlayer/Pods-MCPlayer-frameworks.sh\"\n";
+			showEnvVarsInLog = 0;
+		};
+		81CD9101726E0ADE1845B9E2 /* [CP] Check Pods Manifest.lock */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputPaths = (
+			);
+			name = "[CP] Check Pods Manifest.lock";
+			outputPaths = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "diff \"${PODS_ROOT}/../Podfile.lock\" \"${PODS_ROOT}/Manifest.lock\" > /dev/null\nif [ $? != 0 ] ; then\n    # print error to STDERR\n    echo \"error: The sandbox is not in sync with the Podfile.lock. Run 'pod install' or update your CocoaPods installation.\" >&2\n    exit 1\nfi\n";
+			showEnvVarsInLog = 0;
+		};
+		F700F221CD2678AA4DA90635 /* [CP] Copy Pods Resources */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputPaths = (
+			);
+			name = "[CP] Copy Pods Resources";
+			outputPaths = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "\"${SRCROOT}/Pods/Target Support Files/Pods-MCPlayer/Pods-MCPlayer-resources.sh\"\n";
+			showEnvVarsInLog = 0;
+		};
+/* End PBXShellScriptBuildPhase section */
+
 /* Begin PBXSourcesBuildPhase section */
 		D89134741E8CA4D8004E0C27 /* Sources */ = {
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
 				D89134831E8CA4D8004E0C27 /* ViewController.m in Sources */,
+				D89134BF1E8CB224004E0C27 /* MCPath.m in Sources */,
+				D89134C21E8CB2D6004E0C27 /* NSString+MD5.m in Sources */,
+				D89134B11E8CA7BB004E0C27 /* MCOperation.m in Sources */,
+				D89134BC1E8CAFA4004E0C27 /* MCPlayer.m in Sources */,
 				D89134801E8CA4D8004E0C27 /* AppDelegate.m in Sources */,
 				D891347D1E8CA4D8004E0C27 /* main.m in Sources */,
+				D89134B51E8CACD6004E0C27 /* MCResourceLoader.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -423,9 +552,11 @@
 		};
 		D89134A61E8CA4D8004E0C27 /* Debug */ = {
 			isa = XCBuildConfiguration;
+			baseConfigurationReference = 5BD93EB9631831D74F34C7AA /* Pods-MCPlayer.debug.xcconfig */;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				DEVELOPMENT_TEAM = Q94Y4N4RXK;
+				GCC_INPUT_FILETYPE = automatic;
 				INFOPLIST_FILE = MCPlayer/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";
 				PRODUCT_BUNDLE_IDENTIFIER = com.mcnet.MCPlayer;
@@ -435,9 +566,11 @@
 		};
 		D89134A71E8CA4D8004E0C27 /* Release */ = {
 			isa = XCBuildConfiguration;
+			baseConfigurationReference = A16D6778B408717158367A43 /* Pods-MCPlayer.release.xcconfig */;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				DEVELOPMENT_TEAM = Q94Y4N4RXK;
+				GCC_INPUT_FILETYPE = automatic;
 				INFOPLIST_FILE = MCPlayer/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";
 				PRODUCT_BUNDLE_IDENTIFIER = com.mcnet.MCPlayer;
@@ -514,6 +647,7 @@
 				D89134A71E8CA4D8004E0C27 /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
 		};
 		D89134A81E8CA4D8004E0C27 /* Build configuration list for PBXNativeTarget "MCPlayerTests" */ = {
 			isa = XCConfigurationList;
@@ -522,6 +656,7 @@
 				D89134AA1E8CA4D8004E0C27 /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
 		};
 		D89134AB1E8CA4D8004E0C27 /* Build configuration list for PBXNativeTarget "MCPlayerUITests" */ = {
 			isa = XCConfigurationList;
@@ -530,6 +665,7 @@
 				D89134AD1E8CA4D8004E0C27 /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
 		};
 /* End XCConfigurationList section */
 	};
