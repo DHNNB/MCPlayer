@@ -18,7 +18,7 @@ static NSString * KKScheme = @"MCStreaming";
 
 @interface MCResourceLoader : NSObject <AVAssetResourceLoaderDelegate>
 @property (weak, nonatomic) id<MCResourceLoadDelegate> delegate;
-- (instancetype)initWithUrl:(NSString * )url DesPath:(NSString * )desPath cachePath:(NSString * )cachePath;
+- (instancetype)initWithUrl:(NSString * )url DesPath:(NSString * )desPath cachePath:(NSString * )cachePath isLocal:(BOOL)isLocal;
 - (void)cancel;
 
 @end

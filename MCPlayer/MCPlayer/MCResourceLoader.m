@@ -17,16 +17,22 @@
 @property (copy, nonatomic) NSString * cachePath;
 @property (copy, nonatomic) NSString * url;
 @property (copy, nonatomic) NSString * desPath;
+@property (assign, nonatomic) BOOL isLocal;
+@property (assign, nonatomic) long long localCurrentLength;
 
 @end
 @implementation MCResourceLoader
-- (instancetype)initWithUrl:(NSString * )url DesPath:(NSString * )desPath cachePath:(NSString * )cachePath
+- (instancetype)initWithUrl:(NSString * )url DesPath:(NSString * )desPath cachePath:(NSString * )cachePath isLocal:(BOOL)isLocal
 {
     self = [super init];
     if (self) {
         _cachePath = cachePath;
         _desPath = desPath;
         _url = url;
+        _isLocal = isLocal;
+        if (isLocal) {
+            _localCurrentLength = [[NSData dataWithContentsOfFile:desPath] length];
+        }
     }
     return self;
 }
@@ -55,14 +61,15 @@
     {
         NSLog(@"找到了");
         [self.loadingRequestArray addObject:loadingRequest];
-        if (self.operation) //只开一条线程下载 （如果大音频有需求 支持seek 可根据Offset 完善，小音频这样很简单 直接下载完成 不用过多的处理）
-        {
-            if ([self.operation getCurrentLength] >0 && [self.operation getTotalLength]>0)
-            {
+        if (self.isLocal) {
+            [self setResourceLoadingRequest:loadingRequest currentLength:self.localCurrentLength withTotalLength:self.localCurrentLength];
+        }else if (self.operation) {
+        //只开一条线程下载 （如果大音频有需求 支持seek 可根据Offset 完善，小音频这样很简单 直接下载完成 不用过多的处理）
+            if ([self.operation getCurrentLength] >0 && [self.operation getTotalLength]>0){
                 [self resourceLoadingRequestForDataWith:self.operation];
             }
+            [self start];
         }
-        [self start];
     }
     return YES;
 }
@@ -92,7 +99,7 @@
 
 - (void)setResourceLoadingRequest:(AVAssetResourceLoadingRequest *)loadingRequest currentLength:(long long)currentLength withTotalLength:(long long)totalLength
 {
-    NSString *fileExtension = [self.cachePath pathExtension];
+    NSString *fileExtension = [self.desPath pathExtension];
     NSString *UTI = (__bridge_transfer NSString *)UTTypeCreatePreferredIdentifierForTag(kUTTagClassFilenameExtension, (__bridge CFStringRef)fileExtension, NULL);
     //文件类型
     CFStringRef contentType = UTTypeCreatePreferredIdentifierForTag(kUTTagClassMIMEType, (__bridge CFStringRef)(UTI), NULL);
@@ -133,7 +140,7 @@
 - (NSData *)readTempFileDataWithOffset:(NSUInteger)offset length:(NSUInteger)length
 {
     NSString * path = self.cachePath;
-    if (self.operation.movePathSuccess) //下载完成 - 文件移动完成 获取剩余数据
+    if (self.operation.movePathSuccess || self.isLocal) //下载完成 - 文件移动完成 获取剩余数据
     {
         path = self.desPath;
     }

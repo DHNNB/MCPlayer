@@ -84,35 +84,30 @@
 }
 - (void)playMediaWithUrl:(NSString *)url TempPath:(NSString * )tempPath desPath:(NSString * )desPath delegate:(id)delegate isLocal:(BOOL)isLocal
 {
-    if(self.player)
-    {
+    if(self.player){
         [self removePlayerKVO];
     }
     [self cancleDownload];
     self.stopRefresh = NO;
     self.historyTime = 0;
     self.delegate = delegate;
-    AVPlayerItem * playerItem = nil;
-    if(isLocal)
-    {
-        playerItem = [[AVPlayerItem alloc] initWithURL:[NSURL fileURLWithPath:desPath]];
-    }else
-    {
-        self.resourceLoader = [[MCResourceLoader alloc]initWithUrl:url DesPath:desPath cachePath:tempPath];
-        NSURLComponents * components = [[NSURLComponents alloc] initWithURL:[NSURL URLWithString:url] resolvingAgainstBaseURL:NO];
-        components.scheme = KKScheme;
-        AVURLAsset * asset = [AVURLAsset URLAssetWithURL:components.URL options:nil];
-        self.resourceLoader.delegate = self;
-        [asset.resourceLoader setDelegate:self.resourceLoader queue:dispatch_get_main_queue()];
-        playerItem = [AVPlayerItem playerItemWithAsset:asset];
-        if ([[[UIDevice currentDevice]systemVersion] floatValue] >= 9.0)
-        {
-            playerItem.canUseNetworkResourcesForLiveStreamingWhilePaused = YES;
-        }
+    NSURLComponents * components = nil;
+    if(isLocal){
+        components = [[NSURLComponents alloc] initWithURL:[NSURL fileURLWithPath:desPath] resolvingAgainstBaseURL:NO];
+    }else{
+        components = [[NSURLComponents alloc] initWithURL:[NSURL URLWithString:url] resolvingAgainstBaseURL:NO];
+    }
+    components.scheme = KKScheme;
+    self.resourceLoader = [[MCResourceLoader alloc]initWithUrl:url DesPath:desPath cachePath:tempPath isLocal:isLocal];
+    AVURLAsset * asset = [AVURLAsset URLAssetWithURL:components.URL options:nil];
+    self.resourceLoader.delegate = self;
+    [asset.resourceLoader setDelegate:self.resourceLoader queue:dispatch_get_main_queue()];
+    AVPlayerItem * playerItem = [AVPlayerItem playerItemWithAsset:asset];
+    if ([[[UIDevice currentDevice]systemVersion] floatValue] >= 9.0){
+        playerItem.canUseNetworkResourcesForLiveStreamingWhilePaused = YES;
     }
     self.player = [AVPlayer playerWithPlayerItem:playerItem];
-    if ([[[UIDevice currentDevice]systemVersion] floatValue] >= 10.0)
-    {
+    if ([[[UIDevice currentDevice]systemVersion] floatValue] >= 10.0){
         self.player.automaticallyWaitsToMinimizeStalling = NO;
     }
     [self addPlayerKVO];
