@@ -39,7 +39,7 @@ typedef NS_ENUM(NSInteger, MCPlayerState) {
 };
 
 @interface MCPlayer : NSObject
-@property (assign, nonatomic) id<MCPlayerDelegate> delegate;
+@property (weak, nonatomic) id<MCPlayerDelegate> delegate;
 @property (assign, nonatomic) MCPlayerState playerState;
 @property (assign, nonatomic) BOOL isPlaying;
 @property (assign, nonatomic) BOOL isPause;
