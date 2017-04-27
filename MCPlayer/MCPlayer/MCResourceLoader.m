@@ -63,10 +63,12 @@
         [self.loadingRequestArray addObject:loadingRequest];
         if (self.isLocal) {
             [self setResourceLoadingRequest:loadingRequest currentLength:self.localCurrentLength withTotalLength:self.localCurrentLength];
-        }else if (self.operation) {
-        //只开一条线程下载 （如果大音频有需求 支持seek 可根据Offset 完善，小音频这样很简单 直接下载完成 不用过多的处理）
-            if ([self.operation getCurrentLength] >0 && [self.operation getTotalLength]>0){
-                [self resourceLoadingRequestForDataWith:self.operation];
+        }else{
+            if (self.operation) {
+                //只开一条线程下载 （如果大音频有需求 支持seek 可根据Offset 完善，小音频这样很简单 直接下载完成 不用过多的处理）
+                if ([self.operation getCurrentLength] >0 && [self.operation getTotalLength]>0){
+                    [self resourceLoadingRequestForDataWith:self.operation];
+                }
             }
             [self start];
         }

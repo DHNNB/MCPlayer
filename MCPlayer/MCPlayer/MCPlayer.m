@@ -170,16 +170,14 @@
     CGFloat duration = CMTimeGetSeconds(self.player.currentItem.duration);
     CGFloat currentTime = CMTimeGetSeconds(self.player.currentItem.currentTime);
     NSLog(@"播放结束 %f >>%f",duration,currentTime);
-    if (currentTime + 3 >= duration)
-    {
+    if (currentTime + 3 >= duration){
         dispatch_async(main_queue, ^{
             if (_delegate && [_delegate respondsToSelector:@selector(playerEnd)])
             {
                 [_delegate playerEnd];
             }
         });
-    }else
-    {
+    }else{
         [self failMediaWithMsg:@"播放失败"];
     }
 }
@@ -217,7 +215,7 @@
         NSTimeInterval timeInterval = [self availableDuration];
         CGFloat duration = [self getDuration];
         CGFloat currentTime = 0;
-        if (self.historyTime)
+        if (self.historyTime) //有问题
         {
             currentTime = self.historyTime / 1000.0f;
         }else

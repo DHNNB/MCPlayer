@@ -29,6 +29,7 @@
 }
 - (IBAction)play:(id)sender {
 
+
     NSString * url = @"https://891622172.wodemo.net/down/20170330/435289/胡歌－忘记时间【仙剑奇侠传三片尾曲】.mp3" ;
     [self.palyer playerWithUrl:[url stringByAddingPercentEscapesUsingEncoding:NSUTF8StringEncoding]delegate:self];
 }
