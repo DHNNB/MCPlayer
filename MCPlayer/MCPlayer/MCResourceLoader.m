@@ -22,7 +22,7 @@
 
 @end
 @implementation MCResourceLoader
-- (instancetype)initWithUrl:(NSString * )url DesPath:(NSString * )desPath cachePath:(NSString * )cachePath isLocal:(BOOL)isLocal
+- (instancetype)initWithUrl:(NSString * )url desPath:(NSString * )desPath cachePath:(NSString * )cachePath isLocal:(BOOL)isLocal
 {
     self = [super init];
     if (self) {
@@ -39,8 +39,7 @@
 - (void)start
 {
     dispatch_async(global_quque, ^{
-        if(!self.operation)
-        {
+        if(!self.operation){
             self.operation = [[MCOperation alloc]initWithUrl:self.url tempPath:self.cachePath desPath:self.desPath delegate:self isAgain:NO isCopy:NO];
             [self.operation start];
         }
@@ -86,6 +85,9 @@
 - (void)donwloadProgress:(CGFloat)progress withOperation:(MCOperation * )operation
 {
     [self resourceLoadingRequestForDataWith:operation];
+    if (_delegate && [_delegate respondsToSelector:@selector(downloadSuccessWithDesPath:)]){
+        [_delegate downloadSuccessWithDesPath:operation.desPath];
+    }
 }
 
 - (void)resourceLoadingRequestForDataWith:(MCOperation * )operation
