@@ -9,19 +9,32 @@
 #define main_queue      dispatch_get_main_queue()
 
 #import "MCResourceLoader.h"
-#import "MCOperation.h"
+#import "MCDonwloadTask.h"
 #import <MobileCoreServices/MobileCoreServices.h>
-@interface MCResourceLoader () <MCDownloadDelegate>
+@interface MCResourceLoader () <MCDonwloadTaskDelegate>
 @property (retain, nonatomic) NSMutableArray * loadingRequestArray;
-@property (retain, nonatomic) MCOperation * operation;
+@property (retain, nonatomic) MCDonwloadTask * task;
 @property (copy, nonatomic) NSString * cachePath;
 @property (copy, nonatomic) NSString * url;
 @property (copy, nonatomic) NSString * desPath;
 @property (assign, nonatomic) BOOL isLocal;
-@property (assign, nonatomic) long long localCurrentLength;
+@property (retain, nonatomic) NSFileHandle * readFileHandle;
+/**
+ 二次加载是否显示loading
+ */
+@property (assign, nonatomic) BOOL showLoading;
 
 @end
 @implementation MCResourceLoader
+- (void)dealloc
+{
+    _delegate = nil;
+    NSLog(@"KKResourceLoader 销毁了");
+    if(_task){
+        [self.task cancel];
+    }
+    [self.loadingRequestArray removeAllObjects];
+}
 - (instancetype)initWithUrl:(NSString * )url desPath:(NSString * )desPath cachePath:(NSString * )cachePath isLocal:(BOOL)isLocal
 {
     self = [super init];
@@ -30,136 +43,194 @@
         _desPath = desPath;
         _url = url;
         _isLocal = isLocal;
-        if (isLocal) {
-            _localCurrentLength = [[NSData dataWithContentsOfFile:desPath] length];
-        }
     }
     return self;
 }
-- (void)start
+- (void)fillInContentInformation:(AVAssetResourceLoadingContentInformationRequest *)contentInformationRequest
 {
-    dispatch_async(global_quque, ^{
-        if(!self.operation){
-            self.operation = [[MCOperation alloc]initWithUrl:self.url tempPath:self.cachePath desPath:self.desPath delegate:self isAgain:NO isCopy:NO];
-            [self.operation start];
-        }
-    });
+    NSString *mimeType = self.task.mimeType;
+    CFStringRef contentType = UTTypeCreatePreferredIdentifierForTag(kUTTagClassMIMEType, (__bridge CFStringRef)(mimeType), NULL);
+    contentInformationRequest.byteRangeAccessSupported = YES;
+    contentInformationRequest.contentType = CFBridgingRelease(contentType);
+    contentInformationRequest.contentLength = self.task.videoLength;
 }
-- (void)cancel
+
+- (void)processPendingRequests
 {
-    [self.operation cancleDownload];
-    self.operation = nil;
-    self.delegate = nil;
-    [self.loadingRequestArray removeAllObjects];
-}
-#pragma mark - AVAssetResourceLoaderDelegate
-- (BOOL)resourceLoader:(AVAssetResourceLoader *)resourceLoader shouldWaitForLoadingOfRequestedResource:(AVAssetResourceLoadingRequest *)loadingRequest
-{
-    NSURL *resourceURL = [loadingRequest.request URL];
-    if ([resourceURL.scheme isEqualToString:KKScheme] && loadingRequest)
-    {
-        NSLog(@"找到了");
-        [self.loadingRequestArray addObject:loadingRequest];
-        if (self.isLocal) {
-            [self setResourceLoadingRequest:loadingRequest currentLength:self.localCurrentLength withTotalLength:self.localCurrentLength];
-        }else{
-            if (self.operation) {
-                //只开一条线程下载 （如果大音频有需求 支持seek 可根据Offset 完善，小音频这样很简单 直接下载完成 不用过多的处理）
-                if ([self.operation getCurrentLength] >0 && [self.operation getTotalLength]>0){
-                    [self resourceLoadingRequestForDataWith:self.operation];
-                }
+    @synchronized (self.loadingRequestArray) {
+        [self.loadingRequestArray   enumerateObjectsUsingBlock:^(id  _Nonnull obj, NSUInteger idx, BOOL * _Nonnull stop) {
+            AVAssetResourceLoadingRequest *loadingRequest = obj;
+            [self fillInContentInformation:loadingRequest.contentInformationRequest];        BOOL didRespondCompletely = [self respondWithDataForRequest:loadingRequest.dataRequest];
+            if (didRespondCompletely) {
+                [loadingRequest finishLoading];
+                [self.loadingRequestArray removeObject:obj];
             }
-            [self start];
-        }
-    }
-    return YES;
-}
-
-- (void)resourceLoader:(AVAssetResourceLoader *)resourceLoader didCancelLoadingRequest:(AVAssetResourceLoadingRequest *)loadingRequest
-{
-    NSLog(@"didCancelLoadingRequest");
-    [self.loadingRequestArray removeObject:loadingRequest];
-}
-#pragma mark - KKDownloadDelegate
-
-- (void)donwloadProgress:(CGFloat)progress withOperation:(MCOperation * )operation
-{
-    [self resourceLoadingRequestForDataWith:operation];
-    if (_delegate && [_delegate respondsToSelector:@selector(downloadSuccessWithDesPath:)]){
-        [_delegate downloadSuccessWithDesPath:operation.desPath];
-    }
-}
-
-- (void)resourceLoadingRequestForDataWith:(MCOperation * )operation
-{
-    @synchronized (self.loadingRequestArray)
-    {
-        [self.loadingRequestArray enumerateObjectsUsingBlock:^(id  _Nonnull obj, NSUInteger idx, BOOL * _Nonnull stop) {
-            AVAssetResourceLoadingRequest * loadingRequest = obj;
-            [self setResourceLoadingRequest:loadingRequest currentLength:[operation getCurrentLength] withTotalLength:[operation getTotalLength]];
         }];
     }
 }
 
-- (void)setResourceLoadingRequest:(AVAssetResourceLoadingRequest *)loadingRequest currentLength:(long long)currentLength withTotalLength:(long long)totalLength
+- (BOOL)respondWithDataForRequest:(AVAssetResourceLoadingDataRequest *)dataRequest
+{
+    long long startOffset = dataRequest.requestedOffset;
+    if (dataRequest.currentOffset != 0) {
+        startOffset = dataRequest.currentOffset;
+    }
+    if ((self.task.offset +self.task.downLoadingOffset) < startOffset){
+        return NO;
+    }
+    if (startOffset < self.task.offset) {
+        return NO;
+    }
+    NSUInteger canReadLength = self.task.downLoadingOffset - ((NSInteger)startOffset - self.task.offset);
+    NSUInteger respondLength = MIN((NSUInteger)dataRequest.requestedLength, canReadLength);
+    NSData * data = nil;
+    @try {
+        NSData * filedata = [NSData dataWithContentsOfURL:[NSURL fileURLWithPath:self.cachePath] options:NSDataReadingMappedIfSafe error:nil];
+        NSRange range = NSMakeRange((NSUInteger)startOffset- self.task.offset,respondLength);
+        data = [filedata subdataWithRange:range];
+    } @catch (NSException *exception) {
+        NSLog(@"读取文件失败");
+    }
+    [dataRequest respondWithData:data];
+    long long endOffset = startOffset + dataRequest.requestedLength;
+    BOOL didRespondFully = (self.task.offset + self.task.downLoadingOffset) >= endOffset;
+    return didRespondFully;
+    
+}
+- (BOOL)resourceLoader:(AVAssetResourceLoader *)resourceLoader shouldWaitForLoadingOfRequestedResource:(AVAssetResourceLoadingRequest *)loadingRequest
+{
+    NSURL *resourceURL = [loadingRequest.request URL];
+    if ([resourceURL.scheme isEqualToString:KKScheme]) {
+        [self.loadingRequestArray addObject:loadingRequest];
+        [self dealWithLoadingRequest:loadingRequest];
+        return YES;
+    }
+    return NO;
+}
+- (void)dealWithLoadingRequest:(AVAssetResourceLoadingRequest *)loadingRequest
+{
+    @synchronized (self) {
+        NSRange range = NSMakeRange((NSUInteger)loadingRequest.dataRequest.currentOffset, NSUIntegerMax);
+        if (self.isLocal || self.task.isDownloadFinished) {
+            NSDictionary *fileAttributes=[[NSFileManager defaultManager] attributesOfItemAtPath:self.desPath error:nil];
+            long long localCurrentLength =[[fileAttributes objectForKey:NSFileSize] longLongValue];
+            @try {
+                [self setResourceLoadingRequest:loadingRequest currentLength:localCurrentLength withTotalLength:localCurrentLength];
+            } @catch (NSException *exception) {
+                NSLog(@"setResourceLoadingRequest crash");
+            }
+        }else{
+            if (self.task.downLoadingOffset > 0) {
+                [self processPendingRequests];
+            }
+            NSURL * URL = [NSURL URLWithString:self.url];
+            if (!self.task) {
+                self.task = [[MCDonwloadTask alloc] initWithTempPath:self.cachePath desPath:self.desPath];
+                self.task.delegate = self;
+                [self.task setUrl:URL offset:0];
+            } else {
+                // 如果新的rang的起始位置比当前缓存的位置还大380k，则重新按照range请求数据
+                if (self.task.offset + self.task.downLoadingOffset + 1024 * 380 < range.location || range.location < self.task.offset) {
+                    dispatch_async(main_queue, ^{
+                        self.showLoading = YES;
+                        if([self.delegate respondsToSelector:@selector(mediaDownloadTaskStateForShowLoading:)]){
+                            [self.delegate mediaDownloadTaskStateForShowLoading:YES];
+                        }
+                    });
+                    [self.task setUrl:URL offset:range.location];
+                }
+            }
+        }
+    }
+}
+
+- (BOOL)setResourceLoadingRequest:(AVAssetResourceLoadingRequest *)loadingRequest currentLength:(long long)currentLength withTotalLength:(long long)totalLength
 {
     NSString *fileExtension = [self.desPath pathExtension];
     NSString *UTI = (__bridge_transfer NSString *)UTTypeCreatePreferredIdentifierForTag(kUTTagClassFilenameExtension, (__bridge CFStringRef)fileExtension, NULL);
-    //文件类型
     CFStringRef contentType = UTTypeCreatePreferredIdentifierForTag(kUTTagClassMIMEType, (__bridge CFStringRef)(UTI), NULL);
     loadingRequest.contentInformationRequest.contentType = CFBridgingRelease(contentType);
-    //数据处理
     loadingRequest.contentInformationRequest.byteRangeAccessSupported = YES;
     loadingRequest.contentInformationRequest.contentLength = totalLength;
-    NSUInteger startOffset = loadingRequest.dataRequest.requestedOffset;
-    if (loadingRequest.dataRequest.currentOffset != 0)
-    {
+    long long startOffset = loadingRequest.dataRequest.requestedOffset;
+    if (currentLength <= startOffset) {
+        return NO;
+    }
+    if (loadingRequest.dataRequest.currentOffset != 0){
         startOffset = loadingRequest.dataRequest.currentOffset;
     }
-    NSUInteger canReadLength = currentLength - startOffset;
-    NSUInteger respondLength = MIN(canReadLength, loadingRequest.dataRequest.requestedLength);
-    [loadingRequest.dataRequest respondWithData:[self readTempFileDataWithOffset:startOffset length:respondLength]];
-    NSUInteger endOffset = loadingRequest.dataRequest.requestedOffset + loadingRequest.dataRequest.requestedLength;
-    if (currentLength >= endOffset)
-    {
+    long long canReadLength = currentLength - startOffset;
+    long long respondLength = MIN(canReadLength, loadingRequest.dataRequest.requestedLength);
+    long long endOffset = loadingRequest.dataRequest.requestedOffset + loadingRequest.dataRequest.requestedLength;
+    NSData * filedata = [NSData dataWithContentsOfURL:[NSURL fileURLWithPath:self.desPath] options:NSDataReadingMappedIfSafe error:nil];
+    NSRange range = NSMakeRange((NSUInteger)startOffset,respondLength);
+    NSData * data = [filedata subdataWithRange:range];
+    [loadingRequest.dataRequest respondWithData:data];
+    if (currentLength >= endOffset){
         [loadingRequest finishLoading];
+        @synchronized (self.loadingRequestArray) {
+            [self.loadingRequestArray removeObject:loadingRequest];
+        }
+        return YES;
+    }
+    return NO;
+}
+
+- (void)resourceLoader:(AVAssetResourceLoader *)resourceLoader didCancelLoadingRequest:(AVAssetResourceLoadingRequest *)loadingRequest
+{
+    @synchronized (self.loadingRequestArray) {
         [self.loadingRequestArray removeObject:loadingRequest];
-        NSLog(@"完成了  ");
     }
 }
-#pragma mark - KKDownloadDelegate
-- (void)downloadFailMsg:(NSString *)msg withOperation:(MCOperation * )operation;
+#pragma mark - KKMediaDownloadTaskDelegate
+- (void)didReceiveResponseWithtask:(MCDonwloadTask *)task length:(NSUInteger)ideoLength mimeType:(NSString *)mimeType
 {
-    if (_delegate && [_delegate respondsToSelector:@selector(downloadFailMsg:)])
-    {
-        [_delegate downloadFailMsg:msg];
-    }
-    [self.loadingRequestArray removeAllObjects];
-    self.operation = nil;
+    dispatch_async(main_queue, ^{
+        if([self.delegate respondsToSelector:@selector(mediaDownloadTaskStateForShowLoading:)] && self.showLoading){
+            [self.delegate mediaDownloadTaskStateForShowLoading:NO];
+            self.showLoading = NO;
+        }
+    });
 }
-- (void)downloadSuccessDesPath:(NSString * )desPath withOperation:(MCOperation * )operation;
+- (void)didReceiveVideoDataWithTask:(MCDonwloadTask *)task cacheProgress:(CGFloat)progress
 {
-    [self resourceLoadingRequestForDataWith:operation];
-}
-- (NSData *)readTempFileDataWithOffset:(NSUInteger)offset length:(NSUInteger)length
-{
-    NSString * path = self.cachePath;
-    if (self.operation.movePathSuccess || self.isLocal) //下载完成 - 文件移动完成 获取剩余数据
-    {
-        path = self.desPath;
+    [self processPendingRequests];
+    if ([self.delegate respondsToSelector:@selector(downloadProgress:)]) {
+        [self.delegate downloadProgress:progress];
     }
-    NSFileHandle * handle = [NSFileHandle fileHandleForReadingAtPath:path];
-    [handle seekToFileOffset:offset];
-    return [handle readDataOfLength:length];
+}
+- (void)didFinishLoadingWithTask:(MCDonwloadTask *)task
+{
+    if ([self.delegate respondsToSelector:@selector(downloadSuccessWithDesPath:)]) {
+        [self.delegate downloadSuccessWithDesPath:self.desPath];
+    }
+}
+- (void)didFailLoadingWithTask:(MCDonwloadTask *)task WithErrorStr:(NSString *  )errorStr
+{
+    if ([self.delegate respondsToSelector:@selector(downloadFailMsg:)]) {
+        [self.delegate downloadFailMsg:errorStr];
+    }
+}
+- (void)taskCancelWithTask:(MCDonwloadTask * )task
+{
+    if ([self.delegate respondsToSelector:@selector(taskCancel)]) {
+        [self.delegate taskCancel];
+    }
+}
+- (void)cancel
+{
+    [self.task cancel];
+    self.delegate = nil;
+    @synchronized (self.loadingRequestArray) {
+        [self.loadingRequestArray removeAllObjects];
+    }
 }
 
 - (NSMutableArray * )loadingRequestArray
 {
-    if (!_loadingRequestArray)
-    {
+    if (!_loadingRequestArray){
         _loadingRequestArray = [[NSMutableArray alloc]init];
     }
     return _loadingRequestArray;
 }
-
 @end

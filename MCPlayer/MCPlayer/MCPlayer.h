@@ -8,6 +8,8 @@
 
 #import <Foundation/Foundation.h>
 #import <UIKit/UIKit.h>
+#import <AVFoundation/AVFoundation.h>
+
 @protocol MCPlayerDelegate <NSObject>
 @optional
 /**
@@ -84,15 +86,27 @@ typedef NS_ENUM(NSInteger, MCPlayerState) {
  当音频下载完成之后 切换到avaudioplayer 播放😂
  */
 @interface MCPlayer : NSObject
+
+@property (retain, nonatomic) AVPlayer * player;
+
 @property (weak, nonatomic) id<MCPlayerDelegate> delegate;
 /**
  记录播放状态
  */
 @property (assign, nonatomic) MCPlayerState playerState;
 /**
+ 播放结束 状态 （防止 播放结束 playbackLikelyToKeepUp 调用在此播放）
+ */
+@property (assign, nonatomic) BOOL isPlayEnd;
+/**
  是否 支持rate  如果支持 变速播放 为了保证播放质量 如果是本地数据 直接使用avaudioplayer 播放 如果是网络数据 当数据下载完成之后 自动切换到 avaudioplayer 播放~
  */
 @property (assign, nonatomic) BOOL supportRate;
+
+/**
+ 进入后台是否暂停播放 默认 NO  进入后台暂停
+ */
+@property (assign, nonatomic) BOOL backgroundPlay;
 
 /**
  是否播放
@@ -105,32 +119,32 @@ typedef NS_ENUM(NSInteger, MCPlayerState) {
 @property (assign, nonatomic) BOOL isPause;
 
 /**
+ 没有播放 或者播放失败
+ */
+@property (assign, nonatomic) BOOL isStop;
+
+/**
+ 设置播放器音量
+ */
+@property (assign, nonatomic) CGFloat volume;
+
+/**
  创建播放器
  
  @return 返回的不是单例
  */
-+(MCPlayer * )makeMCPlayer;
++(MCPlayer * )makePlayer;
 /**
- 节目详播放 里边有些文件是否存在的判断
- @param url 地址
- @param delegate 代理
- */
-- (void)playerWithUrl:(NSString *  )url delegate:(id)delegate;
-
-/**
- 可播放 本地 和在线音频  此方法播放在线音频会 边下边播
+ 可播放 本地 和在线音频 视频  此方法播放在线音频  视频 会 边下边播
  @param url 地址 本地可空
- @param tempPath 临时文件 本地可空
- @param desPath 缓存完成的文件 在线离线这个参数都不能为空
+ @param tempPath 临时文件可空
+ @param desPath 缓存完成的文件可空
  @param delegate 代理
- @param isLocal 是否是本地音频
  */
 - (void)playMediaWithUrl:(NSString *)url
                 tempPath:(NSString * )tempPath
                  desPath:(NSString * )desPath
-                delegate:(id)delegate
-                 isLocal:(BOOL)isLocal;
-
+                delegate:(id)delegate;
 /**
  播放本地音频
  
@@ -168,9 +182,9 @@ typedef NS_ENUM(NSInteger, MCPlayerState) {
 /**
  设置播放时间
  
- @param millisecond 单位是毫秒
+ @param seconds 秒
  */
-- (void)seekToTime:(CGFloat)millisecond;
+- (void)seekToTime:(CGFloat)seconds;
 
 /**
  获取音频总时间

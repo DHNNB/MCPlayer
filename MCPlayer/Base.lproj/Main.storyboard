@@ -1,11 +1,11 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<document type="com.apple.InterfaceBuilder3.CocoaTouch.Storyboard.XIB" version="3.0" toolsVersion="11762" systemVersion="16D32" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" colorMatched="YES" initialViewController="BYZ-38-t0r">
+<document type="com.apple.InterfaceBuilder3.CocoaTouch.Storyboard.XIB" version="3.0" toolsVersion="12121" systemVersion="16F73" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" colorMatched="YES" initialViewController="BYZ-38-t0r">
     <device id="retina4_7" orientation="portrait">
         <adaptation id="fullscreen"/>
     </device>
     <dependencies>
         <deployment identifier="iOS"/>
-        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="11757"/>
+        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="12089"/>
         <capability name="documents saved in the Xcode 8 format" minToolsVersion="8.0"/>
     </dependencies>
     <scenes>
@@ -46,6 +46,22 @@
                                 <nil key="textColor"/>
                                 <nil key="highlightedColor"/>
                             </label>
+                            <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="MYv-JO-ofr">
+                                <rect key="frame" x="67.5" y="462" width="240" height="128"/>
+                                <color key="backgroundColor" white="1" alpha="1" colorSpace="calibratedWhite"/>
+                                <constraints>
+                                    <constraint firstAttribute="height" constant="128" id="27t-pQ-Dja"/>
+                                    <constraint firstAttribute="width" constant="240" id="LVa-5K-xaP"/>
+                                </constraints>
+                            </view>
+                            <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="SiH-jW-uRc">
+                                <rect key="frame" x="160.5" y="617" width="54" height="28"/>
+                                <fontDescription key="fontDescription" type="system" pointSize="13"/>
+                                <state key="normal" title="播放视频"/>
+                                <connections>
+                                    <action selector="playVideo:" destination="BYZ-38-t0r" eventType="touchUpInside" id="Qsp-We-Y4r"/>
+                                </connections>
+                            </button>
                         </subviews>
                         <color key="backgroundColor" red="1" green="1" blue="1" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
                         <constraints>
@@ -55,6 +71,10 @@
                             <constraint firstItem="eGF-vV-ecf" firstAttribute="centerX" secondItem="8bC-Xf-vdC" secondAttribute="centerX" id="MEl-xh-tLx"/>
                             <constraint firstItem="aa3-4G-Zna" firstAttribute="top" secondItem="eGF-vV-ecf" secondAttribute="bottom" constant="43" id="Q6S-nm-hMS"/>
                             <constraint firstItem="aa3-4G-Zna" firstAttribute="centerY" secondItem="hnO-zJ-I9e" secondAttribute="centerY" id="WbW-fv-Cws"/>
+                            <constraint firstItem="MYv-JO-ofr" firstAttribute="top" secondItem="aa3-4G-Zna" secondAttribute="bottom" constant="113.5" id="gER-zo-8NV"/>
+                            <constraint firstItem="SiH-jW-uRc" firstAttribute="top" secondItem="MYv-JO-ofr" secondAttribute="bottom" constant="27" id="jsC-7l-AGy"/>
+                            <constraint firstItem="MYv-JO-ofr" firstAttribute="centerX" secondItem="8bC-Xf-vdC" secondAttribute="centerX" id="kOR-ro-mgB"/>
+                            <constraint firstItem="SiH-jW-uRc" firstAttribute="centerX" secondItem="8bC-Xf-vdC" secondAttribute="centerX" id="m8c-C3-VMg"/>
                             <constraint firstItem="aa3-4G-Zna" firstAttribute="leading" secondItem="hnO-zJ-I9e" secondAttribute="trailing" constant="14" id="nen-Rw-0sS"/>
                             <constraint firstItem="aa3-4G-Zna" firstAttribute="centerX" secondItem="8bC-Xf-vdC" secondAttribute="centerX" id="uyA-vK-a52"/>
                         </constraints>
@@ -62,6 +82,7 @@
                     <connections>
                         <outlet property="currentTimeLabel" destination="hnO-zJ-I9e" id="xgc-7J-39J"/>
                         <outlet property="durationLabel" destination="93W-DQ-J1J" id="zQ4-3q-IWY"/>
+                        <outlet property="playerView" destination="MYv-JO-ofr" id="tCk-Gp-Rex"/>
                         <outlet property="slider" destination="aa3-4G-Zna" id="4PL-Ba-d8r"/>
                     </connections>
                 </viewController>

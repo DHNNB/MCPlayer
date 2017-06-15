@@ -9,10 +9,8 @@
 
 #import "MCPlayer.h"
 #import "MCResourceLoader.h"
-#import <AVFoundation/AVFoundation.h>
 #import "MCPath.h"
 @interface MCPlayer() <NSURLSessionDelegate,MCResourceLoadDelegate,AVAudioPlayerDelegate>
-@property (retain, nonatomic) AVPlayer * player;
 
 /**
  AVPlayer 的时间观察者
@@ -29,27 +27,30 @@
  */
 @property (retain, nonatomic) NSTimer * locTimer;
 /**
+ 本地播放 主要是区分 都是avplayer使用  在线就是下载进度
+ */
+@property (assign, nonatomic) BOOL isLocal;
+/**
  *  播放速率
  */
 @property (assign, nonatomic) CGFloat playRate;
-@property (assign, nonatomic) CGFloat historyTime;
 @property (assign, nonatomic) BOOL stopRefresh;
-@property (copy, nonatomic) NSString * currentUrl;
 @property (retain, nonatomic) MCResourceLoader * resourceLoader;
+@property (assign, nonatomic) CGFloat downloadProgress;
 @end
 
 @implementation MCPlayer
 - (void)dealloc
 {
+    _delegate = nil;
     [self cancleDownload];
-    if(self.player)
-    {
+    if(self.player){
         [self removePlayerKVO];
     }
     [[NSNotificationCenter defaultCenter]removeObserver:self];
     NSLog(@"MCAVPlayer 销毁了");
 }
-+(MCPlayer * )makeMCPlayer
++(MCPlayer * )makePlayer
 {
     MCPlayer * player = [[MCPlayer alloc] init];
     
@@ -61,8 +62,8 @@
     if (self) {
         _playRate = 1.0;
         _timeObserver = nil;
-        _historyTime = 0;
         [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(audioRouteChangeListenerCallback:) name:AVAudioSessionRouteChangeNotification object:nil];
+        [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(appDidEnterBackground) name:UIApplicationWillResignActiveNotification object:nil];
     }
     return self;
 }
@@ -72,38 +73,35 @@
     [audioSession setCategory:AVAudioSessionCategoryPlayback error:nil];
     [audioSession setActive:YES error:nil];
 }
-#pragma mark - 播放
-- (void)playerWithUrl:(NSString * )url delegate:(id)delegate
+- (void)appDidEnterBackground
 {
-    [self stopAudioPlayer];
-    if (!url){
-        [self failMediaWithMsg:@"播放地址有误"];
+    if (self.backgroundPlay) {
         return;
     }
-    self.currentUrl = url;
-    [self playerBuffer];
-    [self setAudioSession];
-    NSFileManager * fileManager = [NSFileManager defaultManager];
-    //本地服务器 目录 临时存储
-    NSString *webPath =[MCPath getOfflineMediaTempPathWithUrl:url];
-    //缓存完成后的最终目录
-    NSString  * desPath=[MCPath getOfflineMediaDesPathWithUrl:url];
-//    BOOL loacl = NO;
-    //如果最终目录中有 证明已经缓存完成直接播放
-    if ([fileManager fileExistsAtPath:desPath]){
-        [self playLocalWithPath:desPath startTime:0 downloadSuccess:NO delegate:delegate];
-    }else{
-        [self playMediaWithUrl:url tempPath:webPath desPath:desPath delegate:delegate isLocal:NO];
+    if (self.isPlaying) {
+        [self pauseMedia];
     }
 }
-- (void)playMediaWithUrl:(NSString *)url tempPath:(NSString * )tempPath desPath:(NSString * )desPath delegate:(id)delegate isLocal:(BOOL)isLocal
+
+- (void)playMediaWithUrl:(NSString *)url tempPath:(NSString * )tempPath desPath:(NSString * )desPath delegate:(id)delegate
 {
-    if(self.player){
-        [self removePlayerKVO];
+    url = [url stringByAddingPercentEscapesUsingEncoding:NSUTF8StringEncoding];
+    BOOL isLocal = NO;
+    NSFileManager * fileManager = [NSFileManager defaultManager];
+    if(!tempPath){
+        tempPath =[MCPath getOfflineMediaTempPathWithUrl:url];
     }
+    if (!desPath) {
+        desPath=[MCPath getOfflineMediaDesPathWithUrl:url];
+    }
+    if([fileManager fileExistsAtPath:desPath]){
+        isLocal = YES;
+    }
+    [self stopAudioPlayer];
+    [self removePlayerKVO];
     [self cancleDownload];
+    [self playerBuffer];
     self.stopRefresh = NO;
-    self.historyTime = 0;
     self.delegate = delegate;
     NSURLComponents * components = nil;
     if(isLocal){
@@ -124,9 +122,12 @@
     if ([[[UIDevice currentDevice]systemVersion] floatValue] >= 10.0){
         self.player.automaticallyWaitsToMinimizeStalling = NO;
     }
+    //子类使用 - 视频
+    [self setPlayerLayer];
     [self addPlayerKVO];
     [self addTimerObserver];
 }
+- (void)setPlayerLayer{}
 #pragma mark - 为了满足 rate 变速播放 音质问题
 - (void)playLocalWithPath:(NSString * )path startTime:(CGFloat)seconds downloadSuccess:(BOOL)isSuccess delegate:(id)delegate
 {
@@ -140,7 +141,6 @@
         return;
     }
     self.stopRefresh = NO;
-    self.historyTime = 0;
     self.delegate = delegate;
     self.locPlayer.volume = 1.0f;
     self.locPlayer.delegate = self;
@@ -219,6 +219,20 @@
 }
 
 #pragma mark - KKResourceLoadDelegate
+- (void)downloadProgress:(CGFloat)progress
+{
+    self.downloadProgress = progress;
+}
+//拖动slider
+- (void)mediaDownloadTaskStateForShowLoading:(BOOL)showLoading
+{
+    if (showLoading) {
+        [self playerBuffer];
+    }else{
+        [NSObject cancelPreviousPerformRequestsWithTarget:self selector:@selector(loadingAfterPlayMedia) object:nil];
+        [self performSelector:@selector(loadingAfterPlayMedia) withObject:nil afterDelay:0.5];
+    }
+}
 /**
  下载完成
  */
@@ -238,6 +252,17 @@
 {
     [self failMediaWithMsg:msg];
 }
+- (void)loadingAfterPlayMedia
+{
+    if (self.isPlaying) {
+        [self playMedia];
+    }
+}
+- (void)taskCancel
+{
+    [self failMediaWithMsg:@"播放取消"];
+}
+
 #pragma mark -  拔出事件
 - (void)audioRouteChangeListenerCallback:(NSNotification*)notification
 {
@@ -268,38 +293,41 @@
     [self.player.currentItem addObserver:self forKeyPath:@"playbackBufferFull" options:NSKeyValueObservingOptionNew context:nil];
     [self.player.currentItem addObserver:self forKeyPath:@"playbackLikelyToKeepUp" options:NSKeyValueObservingOptionNew context:nil];
     [self.player addObserver:self forKeyPath:@"rate" options:NSKeyValueObservingOptionNew context:nil];
-    [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(moviePlayDidEnd:) name:AVPlayerItemDidPlayToEndTimeNotification object:nil];
+    [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(moviePlayDidEnd:) name:AVPlayerItemDidPlayToEndTimeNotification object:self.player.currentItem];
 }
 - (void)removePlayerKVO
 {
+    if(self.player){
     [self.player pause];
+    [[NSNotificationCenter defaultCenter] removeObserver:self name:AVPlayerItemDidPlayToEndTimeNotification object:self.player.currentItem];
     [self.player.currentItem removeObserver:self forKeyPath:@"status"];
     [self.player.currentItem removeObserver:self forKeyPath:@"loadedTimeRanges"];
     [self.player.currentItem removeObserver:self forKeyPath:@"playbackBufferEmpty"];
     [self.player.currentItem removeObserver:self forKeyPath:@"playbackBufferFull"];
     [self.player.currentItem removeObserver:self forKeyPath:@"playbackLikelyToKeepUp"];
     [self.player removeObserver:self forKeyPath:@"rate"];
-    [[NSNotificationCenter defaultCenter] removeObserver:self];
     [self.player removeTimeObserver:self.timeObserver];
     [self.player replaceCurrentItemWithPlayerItem:nil];
     self.player = nil;
     self.timeObserver = nil;
+    }
 }
 - (void)moviePlayDidEnd:(NSNotification * )notification
 {
+    AVPlayerItem * playerItem = notification.object;
+    if(playerItem != self.player.currentItem || self.isPlayEnd) return; //别的播放器调用  self.isPlayEnd 防止调用多次
     CGFloat duration = CMTimeGetSeconds(self.player.currentItem.duration);
-    CGFloat currentTime = CMTimeGetSeconds(self.player.currentItem.currentTime);
-    NSLog(@"播放结束 %f >>%f",duration,currentTime);
-    if (currentTime + 3 >= duration){
+    if (duration) {
         dispatch_async(main_queue, ^{
-            if (_delegate && [_delegate respondsToSelector:@selector(playerEnd)])
-            {
+            if (_delegate && [_delegate respondsToSelector:@selector(playerEnd)]){
                 [_delegate playerEnd];
             }
         });
     }else{
         [self failMediaWithMsg:@"播放失败"];
     }
+    self.isPlayEnd = YES;
+    NSLog(@"播放结束 %f",duration);
 }
 
 - (void)observeValueForKeyPath:(nullable NSString *)keyPath ofObject:(nullable id)object change:(nullable NSDictionary<NSString*, id> *)change context:(nullable void *)context
@@ -335,18 +363,15 @@
         NSTimeInterval timeInterval = [self availableDuration];
         CGFloat currentTime = [self getCurrentTime];
         CGFloat duration = [self getDuration];
-//        CGFloat currentTime = 0;
-//        if (self.historyTime) //有问题
-//        {
-//            currentTime = self.historyTime / 1000.0f;
-//        }else
-//        {
-//            currentTime = [self getCurrentTime];
-//        }
         if ( (self.playerState == MCPlayerStateBuffering) &&  (timeInterval + 8 >= duration || timeInterval - 10 >= currentTime)) //预防网速慢 无法播放 加减时间自己设置
         {
             play = YES;
             NSLog(@"缓冲播放了！！！");
+        }
+        if (!self.isLocal) { //不是本地
+            timeInterval = self.downloadProgress * duration;
+        }else{ //本地
+            timeInterval = duration;
         }
         dispatch_async(main_queue, ^{
             if (_delegate && [_delegate respondsToSelector:@selector(playerLoadingValue:duration:)])
@@ -367,7 +392,9 @@
         if (self.player.currentItem.playbackLikelyToKeepUp &&self.playerState == MCPlayerStateBuffering)
         {
             [self playerBufferFull];
-            play = YES;
+            if (self.isPlaying && !self.isPlayEnd) {
+                play = YES;
+            }
             NSLog(@"playbackLikelyToKeepUp");
         }
     }else if ([keyPath isEqualToString:@"playbackBufferFull"])
@@ -379,15 +406,13 @@
         NSLog(@"playbackBufferFull");
     }else if ([keyPath isEqualToString:@"rate"])
     {
-        if (self.player.rate > 0 && self.player)
-        {
-            if (self.player.rate != self.playRate)
-            {
+        CGFloat rate = self.player.rate;
+        if (rate > 0 && self.player){
+            if (rate + 0.1 < self.playRate || rate - 0.1 > self.playRate){//播放视频的时候有问题 允许有0.1的误差
                 [self.player setRate:self.playRate];
             }
             self.playerState = MCPlayerStatePlaying;
-        }
-    }
+        }    }
     if (play)
     {
         if(self.playerState == MCPlayerStatePause)
@@ -454,18 +479,31 @@
 #pragma mark - 播放控制
 - (void)playMedia
 {
+    if (self.isStop) return;
     self.stopRefresh = NO;
-    [self mediaPlayerResumeWithZero:NO];
+    if (self.player) {
+        [self.player play];
+    }else if(self.locPlayer){
+        [self playAudioPlayer];
+    }else{
+        return;
+    }
+    dispatch_async(main_queue, ^{
+        if (_delegate && [_delegate respondsToSelector:@selector(playerPlay)]){
+            [_delegate playerPlay];
+        }
+    });
 }
 - (void)pauseMedia
 {
-    self.historyTime = 0;
+    if(self.isStop) return;
     self.playerState = MCPlayerStatePause;
     [NSObject cancelPreviousPerformRequestsWithTarget:self selector:@selector(setStopRefresh) object:nil];
     self.stopRefresh = YES;
     if (self.player) {
         [self.player pause];
-    }else if(self.locPlayer){
+    }
+    if(self.locPlayer){
         [self pauseAudioPlayer];
     }
     dispatch_async(main_queue, ^{
@@ -477,11 +515,10 @@
 - (void)stopMedia
 {
     [self cancleDownload];
-    self.historyTime = 0;
+    [self.player.currentItem cancelPendingSeeks];
+    [self.player.currentItem.asset cancelLoading];
     self.stopRefresh = NO;
-    if(self.player){
-        [self removePlayerKVO];
-    }
+    [self removePlayerKVO];
     [self stopAudioPlayer];
     self.playerState = MCPlayerStateStopped;
     dispatch_async(main_queue, ^{
@@ -492,7 +529,6 @@
 }
 - (void)failMediaWithMsg:(NSString * )msg
 {
-    self.historyTime = 0;
     self.stopRefresh = NO;
     [self cancleDownload];
     if(self.player){
@@ -505,19 +541,6 @@
         }
     });
     self.playerState = MCPlayerStateStopped;
-    //    if (self.currentUrl) //播放失败删除 缓存 数据
-    //    {
-    ////        NSString *webPath =[KKPath getOfflineMediaTempPathWithUrl:self.currentUrl];
-    ////        NSString  * desPath=[KKPath getOfflineMediaDesPathWithUrl:self.currentUrl];
-    ////        NSFileManager * fileManager = [NSFileManager defaultManager];
-    ////        if ([fileManager fileExistsAtPath:webPath])
-    ////        {
-    ////            [fileManager removeItemAtPath:webPath error:nil];
-    ////        }else if ([fileManager fileExistsAtPath:desPath]) //已下载
-    ////        {
-    ////            [fileManager removeItemAtPath:desPath error:nil];
-    ////        }
-    //    }
 }
 - (void)playerBuffer
 {
@@ -551,33 +574,27 @@
     }
 }
 //跳到某一时间
-- (void)seekToTime:(CGFloat)millisecond
+- (void)seekToTime:(CGFloat)seconds
 {
-    self.historyTime = millisecond;
     [NSObject cancelPreviousPerformRequestsWithTarget:self selector:@selector(setStopRefresh) object:nil];
     self.stopRefresh = YES;
-    if(millisecond == 0){
-        [self mediaPlayerResumeWithZero:YES];
-    }else{
-        [self mediaPlayerResumeWithZero:NO];
-    }
-    [self performSelector:@selector(setStopRefresh) withObject:nil afterDelay:0.3];
-}
--(void)mediaPlayerResumeWithZero:(BOOL)isZero
-{
     if (self.player) {
-        if (isZero){
-            [self.player seekToTime:kCMTimeZero];
-        }else if (self.historyTime > 0){
-            [self.player seekToTime:CMTimeMake(self.historyTime,1000.0f)];
-            self.historyTime = 0;
+        if (self.player.currentItem.status != AVPlayerItemStatusReadyToPlay) {
+            
+        }else {
+            [self.player seekToTime:CMTimeMakeWithSeconds(seconds,self.player.currentTime.timescale) toleranceBefore:kCMTimeZero toleranceAfter:kCMTimeZero completionHandler:^(BOOL finished) {
+                if (self.stopRefresh) {
+                    [self performSelector:@selector(setStopRefresh) withObject:nil afterDelay:0.1];
+                }
+                self.isPlayEnd = NO;
+            }];
         }
         //开始播放
         [self.player play];
     }else if(self.locPlayer){
-        if (isZero || self.historyTime > 0  ){
-            [self.locPlayer setCurrentTime:self.historyTime/1000.0f];
-            self.historyTime = 0;
+        [self.locPlayer setCurrentTime:seconds];
+        if (self.stopRefresh) {
+            [self performSelector:@selector(setStopRefresh) withObject:nil afterDelay:0.3];
         }
         [self playAudioPlayer];
     }else{
@@ -588,13 +605,6 @@
             [_delegate playerPlay];
         }
     });
-    if (self.playerState == MCPlayerStateBuffering){
-        dispatch_async(main_queue, ^{
-            if (_delegate && [_delegate respondsToSelector:@selector(playerBuffer)]){
-                [_delegate playerBuffer];
-            }
-        });
-    }
 }
 - (CGFloat)getDuration
 {
@@ -624,6 +634,10 @@
 - (BOOL)isPause
 {
     return self.playerState == MCPlayerStatePause;
+}
+- (BOOL)isStop
+{
+    return self.playerState == MCPlayerStateStopped;
 }
 
 - (NSTimer * )locTimer

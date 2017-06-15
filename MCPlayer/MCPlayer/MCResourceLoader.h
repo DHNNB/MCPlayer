@@ -13,6 +13,22 @@
 
 @optional
 /**
+ 取消网络播放
+ */
+- (void)taskCancel;
+/**
+ 滑动slider 之后设置加载状态（只在使用网络播放的时候调用）
+ 
+ @param showLoading 是否显示loading
+ */
+- (void)mediaDownloadTaskStateForShowLoading:(BOOL)showLoading;
+
+/**
+ 下载进度
+ @param progress progress
+ */
+- (void)downloadProgress:(CGFloat)progress;
+/**
  下载成功
  
  @param desPath 路径
