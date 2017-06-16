@@ -22,7 +22,7 @@
 + (NSString *)getOfflineMediaTempPathWithUrl:(NSString *)url
 {
     NSString * fileName =  [NSString stringWithFormat:@"%@.%@",[url MD5],[url pathExtension]];
-    NSString * path = [self documentPath:@"webPath"];
+    NSString * path = [self documentPath:@"tmpFile"];
     NSFileManager * fileManager = [NSFileManager defaultManager];
     if (![fileManager fileExistsAtPath:path])
     {

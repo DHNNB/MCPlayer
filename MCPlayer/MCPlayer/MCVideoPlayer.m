@@ -77,6 +77,14 @@
         [self.playerView layoutIfNeeded];
     });
 }
+- (void)setPlayerView:(UIView *)playerView
+{
+    _playerView = playerView;
+    if (self.playerLayer) {
+        self.playerLayer.frame = self.playerView.bounds;
+        [self.playerView.layer insertSublayer:self.playerLayer atIndex:0];
+    }
+}
 /**
  *  获取系统音量
  */

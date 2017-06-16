@@ -5,8 +5,6 @@
 //  Created by M_Code on 2017/3/30.
 //  Copyright © 2017年 MC. All rights reserved.
 //
-#define global_quque    dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0)
-#define main_queue      dispatch_get_main_queue()
 
 #import "MCResourceLoader.h"
 #import "MCDonwloadTask.h"

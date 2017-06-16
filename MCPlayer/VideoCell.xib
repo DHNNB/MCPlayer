@@ -1,0 +1,60 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<document type="com.apple.InterfaceBuilder3.CocoaTouch.XIB" version="3.0" toolsVersion="12121" systemVersion="16F73" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" colorMatched="YES">
+    <device id="retina4_7" orientation="portrait">
+        <adaptation id="fullscreen"/>
+    </device>
+    <dependencies>
+        <deployment identifier="iOS"/>
+        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="12089"/>
+        <capability name="documents saved in the Xcode 8 format" minToolsVersion="8.0"/>
+    </dependencies>
+    <objects>
+        <placeholder placeholderIdentifier="IBFilesOwner" id="-1" userLabel="File's Owner"/>
+        <placeholder placeholderIdentifier="IBFirstResponder" id="-2" customClass="UIResponder"/>
+        <tableViewCell contentMode="scaleToFill" selectionStyle="none" indentationWidth="10" rowHeight="183" id="KGk-i7-Jjw" customClass="VideoCell">
+            <rect key="frame" x="0.0" y="0.0" width="320" height="183"/>
+            <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
+            <tableViewCellContentView key="contentView" opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center" tableViewCell="KGk-i7-Jjw" id="H2p-sc-9uM">
+                <rect key="frame" x="0.0" y="0.0" width="320" height="182.5"/>
+                <autoresizingMask key="autoresizingMask"/>
+                <subviews>
+                    <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="mEA-fI-FWR">
+                        <rect key="frame" x="10" y="5" width="300" height="172.5"/>
+                        <subviews>
+                            <imageView userInteractionEnabled="NO" contentMode="scaleAspectFit" horizontalHuggingPriority="251" verticalHuggingPriority="251" translatesAutoresizingMaskIntoConstraints="NO" id="XZz-IK-y69">
+                                <rect key="frame" x="0.0" y="0.0" width="300" height="172.5"/>
+                            </imageView>
+                        </subviews>
+                        <color key="backgroundColor" white="0.0" alpha="1" colorSpace="calibratedWhite"/>
+                        <constraints>
+                            <constraint firstItem="XZz-IK-y69" firstAttribute="top" secondItem="mEA-fI-FWR" secondAttribute="top" id="2TH-RP-GlP"/>
+                            <constraint firstAttribute="bottom" secondItem="XZz-IK-y69" secondAttribute="bottom" id="8YW-y7-zJa"/>
+                            <constraint firstItem="XZz-IK-y69" firstAttribute="leading" secondItem="mEA-fI-FWR" secondAttribute="leading" id="c1l-Kj-Tqw"/>
+                            <constraint firstAttribute="trailing" secondItem="XZz-IK-y69" secondAttribute="trailing" id="cA8-r7-ZeR"/>
+                        </constraints>
+                    </view>
+                    <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Label" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="9P0-RK-jK1">
+                        <rect key="frame" x="10" y="5" width="33" height="16"/>
+                        <fontDescription key="fontDescription" type="system" pointSize="13"/>
+                        <color key="textColor" white="1" alpha="1" colorSpace="calibratedWhite"/>
+                        <nil key="highlightedColor"/>
+                    </label>
+                </subviews>
+                <constraints>
+                    <constraint firstAttribute="bottom" secondItem="mEA-fI-FWR" secondAttribute="bottom" constant="5" id="QXR-pB-REu"/>
+                    <constraint firstAttribute="trailing" secondItem="mEA-fI-FWR" secondAttribute="trailing" constant="10" id="ePc-2T-ANr"/>
+                    <constraint firstItem="mEA-fI-FWR" firstAttribute="top" secondItem="H2p-sc-9uM" secondAttribute="top" constant="5" id="gQc-qc-9dg"/>
+                    <constraint firstItem="mEA-fI-FWR" firstAttribute="leading" secondItem="H2p-sc-9uM" secondAttribute="leading" constant="10" id="kt2-k1-0cR"/>
+                    <constraint firstItem="9P0-RK-jK1" firstAttribute="leading" secondItem="mEA-fI-FWR" secondAttribute="leading" id="ncK-oo-Xp3"/>
+                    <constraint firstItem="9P0-RK-jK1" firstAttribute="top" secondItem="H2p-sc-9uM" secondAttribute="top" constant="5" id="qF2-wq-D9a"/>
+                </constraints>
+            </tableViewCellContentView>
+            <connections>
+                <outlet property="playerImg" destination="XZz-IK-y69" id="MkX-e0-hmL"/>
+                <outlet property="playerView" destination="mEA-fI-FWR" id="2yO-XB-fxQ"/>
+                <outlet property="videoName" destination="9P0-RK-jK1" id="tdy-cM-R5G"/>
+            </connections>
+            <point key="canvasLocation" x="33" y="173.5"/>
+        </tableViewCell>
+    </objects>
+</document>

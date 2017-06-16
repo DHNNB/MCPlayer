@@ -358,8 +358,7 @@
             default:
                 break;
         }
-    } else if ([keyPath isEqualToString:@"loadedTimeRanges"])
-    {
+    } else if ([keyPath isEqualToString:@"loadedTimeRanges"]){
         NSTimeInterval timeInterval = [self availableDuration];
         CGFloat currentTime = [self getCurrentTime];
         CGFloat duration = [self getDuration];
@@ -374,38 +373,30 @@
             timeInterval = duration;
         }
         dispatch_async(main_queue, ^{
-            if (_delegate && [_delegate respondsToSelector:@selector(playerLoadingValue:duration:)])
-            {
+            if (_delegate && [_delegate respondsToSelector:@selector(playerLoadingValue:duration:)]){
                 [_delegate playerLoadingValue:timeInterval duration:CMTimeGetSeconds(self.player.currentItem.duration)];
             }
         });
-    } else if ([keyPath isEqualToString:@"playbackBufferEmpty"])
-    {
-        if(self.player.currentItem.playbackBufferEmpty)
-        {
+    } else if ([keyPath isEqualToString:@"playbackBufferEmpty"]){
+        if(self.player.currentItem.playbackBufferEmpty){
             [self playerBuffer];
             NSLog(@"playbackBufferEmpty");
         }
         
-    }else if ([keyPath isEqualToString:@"playbackLikelyToKeepUp"])
-    {
-        if (self.player.currentItem.playbackLikelyToKeepUp &&self.playerState == MCPlayerStateBuffering)
-        {
+    }else if ([keyPath isEqualToString:@"playbackLikelyToKeepUp"]){
+        if (self.player.currentItem.playbackLikelyToKeepUp &&self.playerState == MCPlayerStateBuffering){
             [self playerBufferFull];
             if (self.isPlaying && !self.isPlayEnd) {
                 play = YES;
             }
             NSLog(@"playbackLikelyToKeepUp");
         }
-    }else if ([keyPath isEqualToString:@"playbackBufferFull"])
-    {
-        if(self.player.currentItem.playbackBufferFull)
-        {
+    }else if ([keyPath isEqualToString:@"playbackBufferFull"]){
+        if(self.player.currentItem.playbackBufferFull){
             [self playerBufferFull];
         }
         NSLog(@"playbackBufferFull");
-    }else if ([keyPath isEqualToString:@"rate"])
-    {
+    }else if ([keyPath isEqualToString:@"rate"]){
         CGFloat rate = self.player.rate;
         if (rate > 0 && self.player){
             if (rate + 0.1 < self.playRate || rate - 0.1 > self.playRate){//播放视频的时候有问题 允许有0.1的误差
@@ -413,13 +404,10 @@
             }
             self.playerState = MCPlayerStatePlaying;
         }    }
-    if (play)
-    {
-        if(self.playerState == MCPlayerStatePause)
-        {
+    if (play){
+        if(self.playerState == MCPlayerStatePause){
             [self.player pause];
-        }else
-        {
+        }else{
             [self playMedia];
         }
     }
@@ -437,9 +425,7 @@
 {
     __weak typeof (self)weakSelf = self;
     self.timeObserver = [self.player addPeriodicTimeObserverForInterval:CMTimeMake(1, 4) queue:NULL usingBlock:^(CMTime time) {
-        
-        if (weakSelf.stopRefresh)
-        {
+        if (weakSelf.stopRefresh){
             return ;
         }
         CGFloat currentTimeValue = CMTimeGetSeconds(weakSelf.player.currentItem.currentTime);
@@ -449,7 +435,7 @@
         NSString * residueTimeSting=[weakSelf getTimeMinStr:durationValue -currentTimeValue];
         dispatch_async(main_queue, ^{
             if (weakSelf.delegate && [weakSelf.delegate respondsToSelector:@selector(playerPlayTimeSecond:currentStr:withResidueStr:)])
-            {
+{
                 [weakSelf.delegate playerPlayTimeSecond:currentTimeValue currentStr:currentString withResidueStr:residueTimeSting];
             }
         });

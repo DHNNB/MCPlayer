@@ -44,7 +44,7 @@ typedef NS_ENUM(NSInteger, MCPanDirection){
 @property (weak, nonatomic) id<MCVideoPlayerDelegate> viewDelegate;
 
 /**
- 不使用手势 默认NO
+ 是否禁用手势 默认NO
  */
 @property (assign, nonatomic) BOOL nonuseTap;
 
