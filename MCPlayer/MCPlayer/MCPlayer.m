@@ -53,7 +53,6 @@
 +(MCPlayer * )makePlayer
 {
     MCPlayer * player = [[MCPlayer alloc] init];
-    
     return player;
 }
 - (instancetype)init

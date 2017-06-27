@@ -16,6 +16,7 @@
 @property (retain, nonatomic) NSMutableArray * dataArray;
 @property (retain, nonatomic) AVAssetImageGenerator * generator;
 @property (assign, nonatomic) NSInteger currentIndex;
+@property (retain, nonatomic) UIView * playView;
 @end
 
 @implementation VideoViewController
@@ -23,11 +24,13 @@
 {
     
 }
+
 - (void)viewDidLoad
 {
     [super viewDidLoad];
     [self fetchData];
 }
+
 - (void)fetchData
 {
     NSString *path = [[NSBundle mainBundle] pathForResource:@"data" ofType:@"plist"];
@@ -46,6 +49,7 @@
 //    MCVideoModel * model = self.dataArray.firstObject;
 //    [self getVideoPreViewImageWithAtTime:0 size:CGSizeMake(180, 180) model:model];
 }
+
 //- (void)reloadRowCell:(MCVideoModel * )model
 //{
 //    NSInteger row = [self.dataArray indexOfObject:model];
@@ -85,7 +89,6 @@
                 break;
             }
         }
-
     }
     return cell;
 }
@@ -97,6 +100,22 @@
     self.videoPlayer.playerView = cell.playerView;
     self.currentIndex = indexPath.row;
     [self.videoPlayer playMediaWithUrl:model.url tempPath:nil desPath:nil delegate:nil];
+    
+}
+- (void)scrollViewDidScroll:(UIScrollView *)scrollView
+{
+    if (self.videoPlayer.isStop) {
+        return;
+    }
+    VideoCell * cell = [self.videoTableView cellForRowAtIndexPath:[NSIndexPath indexPathForRow:self.currentIndex inSection:0]];
+    BOOL visble = [self.videoTableView.visibleCells containsObject:cell];
+    if (!visble) {
+        self.videoPlayer.playerView = self.playView;
+        self.playView.hidden = NO;
+    }else{
+        self.videoPlayer.playerView = cell.playerView;
+        self.playView.hidden = YES;
+    }
 }
 - (void)didReceiveMemoryWarning {
     [super didReceiveMemoryWarning];
@@ -126,6 +145,12 @@
 //         [NSArray arrayWithObject:[NSValue valueWithCMTime:time]] completionHandler:handler];
 //    });
 //}
+- (void)playViewPan:(UIPanGestureRecognizer * )pan
+{
+    CGPoint location = [pan locationInView:pan.view.superview];
+    self.playView.center = location;
+}
+
 - (MCVideoPlayer * )videoPlayer
 {
     if (!_videoPlayer) {
@@ -140,5 +165,16 @@
         _dataArray = [[NSMutableArray alloc]init];
     }
     return _dataArray;
+}
+- (UIView * )playView
+{
+    if (!_playView) {
+        _playView = [[UIView alloc]initWithFrame:CGRectMake(0, 0, 200, 200)];
+        _playView.hidden = YES;
+        [self.view addSubview:_playView];
+        UIPanGestureRecognizer * pan = [[UIPanGestureRecognizer alloc]initWithTarget:self action:@selector(playViewPan:)];
+        [_playView addGestureRecognizer:pan];
+    }
+    return _playView;
 }
 @end

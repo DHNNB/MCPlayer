@@ -193,25 +193,25 @@
 - (void)didReceiveVideoDataWithTask:(MCDonwloadTask *)task cacheProgress:(CGFloat)progress
 {
     [self processPendingRequests];
-    if ([self.delegate respondsToSelector:@selector(downloadProgress:)]) {
+    if ([self.delegate respondsToSelector:@selector(downloadProgress:)] && self.delegate) {
         [self.delegate downloadProgress:progress];
     }
 }
 - (void)didFinishLoadingWithTask:(MCDonwloadTask *)task
 {
-    if ([self.delegate respondsToSelector:@selector(downloadSuccessWithDesPath:)]) {
+    if ([self.delegate respondsToSelector:@selector(downloadSuccessWithDesPath:)] && self.delegate) {
         [self.delegate downloadSuccessWithDesPath:self.desPath];
     }
 }
 - (void)didFailLoadingWithTask:(MCDonwloadTask *)task WithErrorStr:(NSString *  )errorStr
 {
-    if ([self.delegate respondsToSelector:@selector(downloadFailMsg:)]) {
+    if ([self.delegate respondsToSelector:@selector(downloadFailMsg:)] && self.delegate) {
         [self.delegate downloadFailMsg:errorStr];
     }
 }
 - (void)taskCancelWithTask:(MCDonwloadTask * )task
 {
-    if ([self.delegate respondsToSelector:@selector(taskCancel)]) {
+    if ([self.delegate respondsToSelector:@selector(taskCancel)] && self.delegate) {
         [self.delegate taskCancel];
     }
 }

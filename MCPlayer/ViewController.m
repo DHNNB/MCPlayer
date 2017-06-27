@@ -29,7 +29,8 @@
     // Dispose of any resources that can be recreated.
 }
 - (IBAction)play:(id)sender {
-    NSString * url = @"https://891622172.wodemo.net/down/20170330/435289/胡歌－忘记时间【仙剑奇侠传三片尾曲】.mp3" ;
+//    NSString * url = @"https://891622172.wodemo.net/down/20170330/435289/胡歌－忘记时间【仙剑奇侠传三片尾曲】.mp3" ;
+    NSString * url = @"http://192.168.0.106/969b070dbcd1237cd1970327c2eccb60.mp3" ;
     [self.palyer playMediaWithUrl:url tempPath:nil desPath:nil delegate:self];
 }
 
