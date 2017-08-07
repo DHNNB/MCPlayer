@@ -81,10 +81,6 @@ typedef NS_ENUM(NSInteger, MCPlayerState) {
     MCPlayerStateFailed,    // 播放失败
     MCPlayerStatePause       // 暂停播放
 };
-/**
- 本类 存在两个播放器 一个是avplayer 边播变下 一个是 AVAudioPlayer 为了实现慢速播放音质问题而创建
- 当音频下载完成之后 切换到avaudioplayer 播放😂
- */
 @interface MCPlayer : NSObject
 
 @property (retain, nonatomic) AVPlayer * player;
@@ -98,10 +94,6 @@ typedef NS_ENUM(NSInteger, MCPlayerState) {
  播放结束 状态 （防止 播放结束 playbackLikelyToKeepUp 调用在此播放）
  */
 @property (assign, nonatomic) BOOL isPlayEnd;
-/**
- 是否 支持rate  如果支持 变速播放 为了保证播放质量 如果是本地数据 直接使用avaudioplayer 播放 如果是网络数据 当数据下载完成之后 自动切换到 avaudioplayer 播放~
- */
-@property (assign, nonatomic) BOOL supportRate;
 
 /**
  进入后台是否暂停播放 默认 NO  进入后台暂停
@@ -145,18 +137,6 @@ typedef NS_ENUM(NSInteger, MCPlayerState) {
                 tempPath:(NSString * )tempPath
                  desPath:(NSString * )desPath
                 delegate:(id)delegate;
-/**
- 播放本地音频
- 
- @param path 文件路径
- @param seconds 开始时间
- @param isSuccess 是否为下载成功时候调用 单独使用传入NO即可
- @param delegate 代理 只会调用 播放结束 失败 暂停 播放 这几个代理
- */
-- (void)playLocalWithPath:(NSString * )path
-                startTime:(CGFloat)seconds
-          downloadSuccess:(BOOL)isSuccess
-                 delegate:(id)delegate;
 /**
  音频播放
  */

@@ -28,6 +28,8 @@
 		D8C9FCAA1EF260F200494CF6 /* VideoCell.xib in Resources */ = {isa = PBXBuildFile; fileRef = D8C9FCA81EF260F200494CF6 /* VideoCell.xib */; };
 		D8C9FCAC1EF26CE200494CF6 /* data.plist in Resources */ = {isa = PBXBuildFile; fileRef = D8C9FCAB1EF26CE200494CF6 /* data.plist */; };
 		D8C9FCB41EF2937400494CF6 /* MCVideoModel.m in Sources */ = {isa = PBXBuildFile; fileRef = D8C9FCB31EF2937400494CF6 /* MCVideoModel.m */; };
+		D8DF00C81F0E03D0006309B6 /* MCCacheRecord.m in Sources */ = {isa = PBXBuildFile; fileRef = D8DF00C71F0E03D0006309B6 /* MCCacheRecord.m */; };
+		D8DF00CB1F0E093B006309B6 /* MCRangeModel.m in Sources */ = {isa = PBXBuildFile; fileRef = D8DF00CA1F0E093B006309B6 /* MCRangeModel.m */; };
 		E468CA06D1BC7C9CA02BA68C /* Pods_MCPlayer.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = C1474D5C98B5DE19EDA6FC37 /* Pods_MCPlayer.framework */; };
 /* End PBXBuildFile section */
 
@@ -91,6 +93,10 @@
 		D8C9FCAE1EF274AE00494CF6 /* MCPlayer-Prefix.pch */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "MCPlayer-Prefix.pch"; sourceTree = "<group>"; };
 		D8C9FCB21EF2937400494CF6 /* MCVideoModel.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MCVideoModel.h; sourceTree = "<group>"; };
 		D8C9FCB31EF2937400494CF6 /* MCVideoModel.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = MCVideoModel.m; sourceTree = "<group>"; };
+		D8DF00C61F0E03D0006309B6 /* MCCacheRecord.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MCCacheRecord.h; sourceTree = "<group>"; };
+		D8DF00C71F0E03D0006309B6 /* MCCacheRecord.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = MCCacheRecord.m; sourceTree = "<group>"; };
+		D8DF00C91F0E093B006309B6 /* MCRangeModel.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MCRangeModel.h; sourceTree = "<group>"; };
+		D8DF00CA1F0E093B006309B6 /* MCRangeModel.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = MCRangeModel.m; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -217,6 +223,10 @@
 		D89134B21E8CACA2004E0C27 /* MCPlayer */ = {
 			isa = PBXGroup;
 			children = (
+				D8DF00C61F0E03D0006309B6 /* MCCacheRecord.h */,
+				D8DF00C71F0E03D0006309B6 /* MCCacheRecord.m */,
+				D8DF00C91F0E093B006309B6 /* MCRangeModel.h */,
+				D8DF00CA1F0E093B006309B6 /* MCRangeModel.m */,
 				D8C9FC9A1EF2395200494CF6 /* MCDonwloadTask.h */,
 				D8C9FC9B1EF2395200494CF6 /* MCDonwloadTask.m */,
 				D89134B31E8CACD6004E0C27 /* MCResourceLoader.h */,
@@ -423,9 +433,11 @@
 			buildActionMask = 2147483647;
 			files = (
 				D8C9FCB41EF2937400494CF6 /* MCVideoModel.m in Sources */,
+				D8DF00CB1F0E093B006309B6 /* MCRangeModel.m in Sources */,
 				D8C9FCA91EF260F200494CF6 /* VideoCell.m in Sources */,
 				D8C9FCA51EF25F9C00494CF6 /* VideoViewController.m in Sources */,
 				D89134831E8CA4D8004E0C27 /* ViewController.m in Sources */,
+				D8DF00C81F0E03D0006309B6 /* MCCacheRecord.m in Sources */,
 				D89134BF1E8CB224004E0C27 /* MCPath.m in Sources */,
 				D89134C21E8CB2D6004E0C27 /* NSString+MD5.m in Sources */,
 				D89134BC1E8CAFA4004E0C27 /* MCPlayer.m in Sources */,

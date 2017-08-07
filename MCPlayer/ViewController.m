@@ -8,6 +8,7 @@
 
 #import "ViewController.h"
 #import "MCPlayer.h"
+#import "MCCacheRecord.h"
 @interface ViewController () <MCPlayerDelegate>
 @property (weak, nonatomic) IBOutlet UISlider *slider;
 @property (weak, nonatomic) IBOutlet UILabel *currentTimeLabel;
@@ -20,7 +21,8 @@
 
 - (void)viewDidLoad {
     [super viewDidLoad];
-    // Do any additional setup after loading the view, typically from a nib.
+    [MCCacheRecord saveRecordFileWithRange:NSMakeRange(10, 20)];
+
 }
 
 
@@ -30,7 +32,7 @@
 }
 - (IBAction)play:(id)sender {
 //    NSString * url = @"https://891622172.wodemo.net/down/20170330/435289/胡歌－忘记时间【仙剑奇侠传三片尾曲】.mp3" ;
-    NSString * url = @"http://192.168.0.106/969b070dbcd1237cd1970327c2eccb60.mp3" ;
+    NSString * url = @"https://mpdown.kekenet.com//Sound/2017/06/song0626ugly.mp3" ;
     [self.palyer playMediaWithUrl:url tempPath:nil desPath:nil delegate:self];
 }
 
@@ -48,7 +50,6 @@
 {
     if (!_palyer){
         _palyer = [MCPlayer makePlayer];
-        _palyer.supportRate = NO; // 音频 支持这个 会在下载完成之后马上换个本地播放器播放
         _palyer.backgroundPlay = NO;//后台播放
     }
     return _palyer;

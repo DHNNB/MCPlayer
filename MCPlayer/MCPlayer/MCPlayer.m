@@ -10,22 +10,12 @@
 #import "MCPlayer.h"
 #import "MCResourceLoader.h"
 #import "MCPath.h"
-@interface MCPlayer() <NSURLSessionDelegate,MCResourceLoadDelegate,AVAudioPlayerDelegate>
+@interface MCPlayer() <NSURLSessionDelegate,MCResourceLoadDelegate>
 
 /**
  AVPlayer 的时间观察者
  */
 @property (weak, nonatomic) id timeObserver;
-
-/**
- 为了播放速度 rate 音质问题 在建立一个 本地播放器
- */
-@property (retain, nonatomic) AVAudioPlayer * locPlayer;
-
-/**
- 为AVAudioPlayer 创建的定时器
- */
-@property (retain, nonatomic) NSTimer * locTimer;
 /**
  本地播放 主要是区分 都是avplayer使用  在线就是下载进度
  */
@@ -96,7 +86,6 @@
     if([fileManager fileExistsAtPath:desPath]){
         isLocal = YES;
     }
-    [self stopAudioPlayer];
     [self removePlayerKVO];
     [self cancleDownload];
     [self playerBuffer];
@@ -127,96 +116,6 @@
     [self addTimerObserver];
 }
 - (void)setPlayerLayer{}
-#pragma mark - 为了满足 rate 变速播放 音质问题
-- (void)playLocalWithPath:(NSString * )path startTime:(CGFloat)seconds downloadSuccess:(BOOL)isSuccess delegate:(id)delegate
-{
-    NSData * data = [NSData dataWithContentsOfFile:path];
-    NSError * error = nil;
-    self.locPlayer = [[AVAudioPlayer alloc] initWithData:data error:&error];
-    if (error) { //创建失败
-        if (!isSuccess) {
-            [self failMediaWithMsg:@"音频播放失败"];
-        }
-        return;
-    }
-    self.stopRefresh = NO;
-    self.delegate = delegate;
-    self.locPlayer.volume = 1.0f;
-    self.locPlayer.delegate = self;
-    self.locPlayer.enableRate = YES;
-    self.locPlayer.rate = self.playRate;
-    if([self.locPlayer prepareToPlay]){
-        //销毁之前的播放器
-        if(self.player){
-            [self removePlayerKVO];
-        }
-        [self cancleDownload];
-        if (!isSuccess) {
-            dispatch_async(main_queue, ^{
-                if (_delegate && [_delegate respondsToSelector:@selector(playerLoadingValue:duration:)]){
-                    CGFloat duration = self.locPlayer.duration;
-                    [_delegate playerLoadingValue:duration duration:duration];
-                }
-            });
-        }
-        if ([self isPlaying] && isSuccess){
-            if (seconds > 0) {
-                [self.locPlayer setCurrentTime:seconds];
-            }
-            [self playAudioPlayer];
-        }else{
-            [self playAudioPlayer];
-            dispatch_async(main_queue, ^{
-                if (_delegate && [_delegate respondsToSelector:@selector(playerPlay)]){
-                    [_delegate playerPlay];
-                }
-            });
-        }
-    }
-}
-//播放控制
-- (void)playAudioPlayer
-{
-    [self locTimer];
-    [self.locPlayer play];
-    self.playerState = MCPlayerStatePlaying;
-}
-- (void)pauseAudioPlayer
-{
-    if (_locTimer) {
-        [_locTimer timeInterval];
-        _locTimer = nil;
-    }
-    [self.locPlayer pause];
-}
-- (void)stopAudioPlayer
-{
-    if (self.locPlayer) {
-        [self.locPlayer stop];
-        self.locPlayer = nil;
-    }
-    if (_locTimer) {
-        [_locTimer timeInterval];
-        _locTimer = nil;
-    }
-}
-- (void)audioPlayerDidFinishPlaying:(AVAudioPlayer *)player successfully:(BOOL)flag
-{
-    if(flag){
-        dispatch_async(main_queue, ^{
-            if (_delegate && [_delegate respondsToSelector:@selector(playerEnd)]){
-                [_delegate playerEnd];
-            }
-        });
-    }else{
-        [self failMediaWithMsg:@"音频播放失败"];
-    }
-}
-- (void)audioPlayerDecodeErrorDidOccur:(AVAudioPlayer *)player error:(NSError * __nullable)error
-{
-    [self failMediaWithMsg:@"音频播放失败"];
-}
-
 #pragma mark - KKResourceLoadDelegate
 - (void)downloadProgress:(CGFloat)progress
 {
@@ -237,12 +136,6 @@
  */
 - (void)downloadSuccessWithDesPath:(NSString *)desPath
 {
-    //如果支持 变速播放 为了音质 切换播放器
-    if(self.supportRate){
-        CGFloat currentTime = [self getCurrentTime];
-        [self playLocalWithPath:desPath startTime:currentTime downloadSuccess:YES delegate:self.delegate];
-    }
-    
     if (_delegate && [_delegate respondsToSelector:@selector(downloadSuccess)]){
         [_delegate downloadSuccess];
     }
@@ -440,23 +333,6 @@
         });
     }];
 }
-//本地播放器
-- (void)observerLocPlayerCurrentTime
-{
-    if (self.stopRefresh){
-        return ;
-    }
-    CGFloat currentTimeValue = self.locPlayer.currentTime;
-    CGFloat  durationValue = self.locPlayer.duration;
-    NSString *currentString = [self getTimeMinStr:currentTimeValue];
-    //剩余时间
-    NSString * residueTimeSting=[self getTimeMinStr:durationValue -currentTimeValue];
-    dispatch_async(main_queue, ^{
-        if (self.delegate && [self.delegate respondsToSelector:@selector(playerPlayTimeSecond:currentStr:withResidueStr:)]){
-            [self.delegate playerPlayTimeSecond:currentTimeValue currentStr:currentString withResidueStr:residueTimeSting];
-        }
-    });
-}
 - (void)setStopRefresh
 {
     self.stopRefresh = NO;
@@ -468,8 +344,6 @@
     self.stopRefresh = NO;
     if (self.player) {
         [self.player play];
-    }else if(self.locPlayer){
-        [self playAudioPlayer];
     }else{
         return;
     }
@@ -488,9 +362,6 @@
     if (self.player) {
         [self.player pause];
     }
-    if(self.locPlayer){
-        [self pauseAudioPlayer];
-    }
     dispatch_async(main_queue, ^{
         if (_delegate && [_delegate respondsToSelector:@selector(playerPause)]){
             [_delegate playerPause];
@@ -504,7 +375,6 @@
     [self.player.currentItem.asset cancelLoading];
     self.stopRefresh = NO;
     [self removePlayerKVO];
-    [self stopAudioPlayer];
     self.playerState = MCPlayerStateStopped;
     dispatch_async(main_queue, ^{
         if (_delegate && [_delegate respondsToSelector:@selector(playerStop)]){
@@ -519,7 +389,6 @@
     if(self.player){
         [self removePlayerKVO];
     }
-    [self stopAudioPlayer];
     dispatch_async(main_queue, ^{
         if (_delegate && [_delegate respondsToSelector:@selector(playerFailWithMsg:)]){
             [_delegate playerFailWithMsg:msg];
@@ -554,9 +423,6 @@
             [self.player setRate:value];
         }
     }
-    if(self.locPlayer){
-        self.locPlayer.rate = value;
-    }
 }
 //跳到某一时间
 - (void)seekToTime:(CGFloat)seconds
@@ -576,12 +442,6 @@
         }
         //开始播放
         [self.player play];
-    }else if(self.locPlayer){
-        [self.locPlayer setCurrentTime:seconds];
-        if (self.stopRefresh) {
-            [self performSelector:@selector(setStopRefresh) withObject:nil afterDelay:0.3];
-        }
-        [self playAudioPlayer];
     }else{
         return;
     }
@@ -593,16 +453,10 @@
 }
 - (CGFloat)getDuration
 {
-    if (self.locPlayer) {
-        return self.locPlayer.duration;
-    }
     return CMTimeGetSeconds(self.player.currentItem.duration);
 }
 - (CGFloat)getCurrentTime
 {
-    if (self.locPlayer) {
-        return self.locPlayer.currentTime;
-    }
     return CMTimeGetSeconds(self.player.currentItem.currentTime);
 }
 - (void)cancleDownload
@@ -623,16 +477,6 @@
 - (BOOL)isStop
 {
     return self.playerState == MCPlayerStateStopped;
-}
-
-- (NSTimer * )locTimer
-{
-    if (!_locTimer) {
-        dispatch_async(main_queue, ^{
-            _locTimer = [NSTimer scheduledTimerWithTimeInterval:0.25f target:self selector:@selector(observerLocPlayerCurrentTime) userInfo:nil repeats:YES];
-            [[NSRunLoop currentRunLoop]addTimer:_locTimer forMode:NSRunLoopCommonModes];});
-    }
-    return _locTimer;
 }
 
 - (NSString *)getTimeMinStr:(NSInteger)second
