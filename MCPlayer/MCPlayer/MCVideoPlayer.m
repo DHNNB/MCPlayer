@@ -214,7 +214,7 @@
         return;
     }
     self.sumTime += value / 300.0f;
-    CGFloat duration  = [self getDuration];
+    CGFloat duration  = self.duration;
     if (self.sumTime > duration) {
         self.sumTime = duration;
     }

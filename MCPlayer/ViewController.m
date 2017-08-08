@@ -32,7 +32,7 @@
 }
 - (IBAction)play:(id)sender {
 //    NSString * url = @"https://891622172.wodemo.net/down/20170330/435289/胡歌－忘记时间【仙剑奇侠传三片尾曲】.mp3" ;
-    NSString * url = @"https://mpdown.kekenet.com//Sound/2017/06/song0626ugly.mp3" ;
+    NSString * url = @"https://891622172.wodemo.net/down/20170330/435289/胡歌－忘记时间【仙剑奇侠传三片尾曲】.mp3" ;
     [self.palyer playMediaWithUrl:url tempPath:nil desPath:nil delegate:self];
 }
 

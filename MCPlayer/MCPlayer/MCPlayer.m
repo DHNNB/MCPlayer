@@ -252,8 +252,8 @@
         }
     } else if ([keyPath isEqualToString:@"loadedTimeRanges"]){
         NSTimeInterval timeInterval = [self availableDuration];
-        CGFloat currentTime = [self getCurrentTime];
-        CGFloat duration = [self getDuration];
+        CGFloat currentTime = self.currentTime;
+        CGFloat duration = self.duration;
         if ( (self.playerState == MCPlayerStateBuffering) &&  (timeInterval + 8 >= duration || timeInterval - 10 >= currentTime)) //预防网速慢 无法播放 加减时间自己设置
         {
             play = YES;
@@ -320,15 +320,9 @@
         if (weakSelf.stopRefresh){
             return ;
         }
-        CGFloat currentTimeValue = CMTimeGetSeconds(weakSelf.player.currentItem.currentTime);
-        CGFloat  durationValue = CMTimeGetSeconds(weakSelf.player.currentItem.duration);
-        NSString *currentString = [weakSelf getTimeMinStr:currentTimeValue];
-        //剩余时间
-        NSString * residueTimeSting=[weakSelf getTimeMinStr:durationValue -currentTimeValue];
         dispatch_async(main_queue, ^{
-            if (weakSelf.delegate && [weakSelf.delegate respondsToSelector:@selector(playerPlayTimeSecond:currentStr:withResidueStr:)])
-{
-                [weakSelf.delegate playerPlayTimeSecond:currentTimeValue currentStr:currentString withResidueStr:residueTimeSting];
+            if (weakSelf.delegate && [weakSelf.delegate respondsToSelector:@selector(playerPlayTimeSecond:)]){
+                [weakSelf.delegate playerPlayTimeSecond:weakSelf.currentTime];
             }
         });
     }];
@@ -451,11 +445,11 @@
         }
     });
 }
-- (CGFloat)getDuration
+- (CGFloat)duration
 {
     return CMTimeGetSeconds(self.player.currentItem.duration);
 }
-- (CGFloat)getCurrentTime
+- (CGFloat)currentTime
 {
     return CMTimeGetSeconds(self.player.currentItem.currentTime);
 }

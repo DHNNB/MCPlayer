@@ -25,12 +25,8 @@
  播放时间更新
  
  @param seconds 当前播放时间
- @param currentString 当前时间 字符串
- @param residueStr 剩余时间字符串
  */
-- (void)playerPlayTimeSecond:(CGFloat)seconds
-                  currentStr:(NSString *)currentString
-              withResidueStr:(NSString *)residueStr;
+- (void)playerPlayTimeSecond:(CGFloat)seconds;
 /**
  缓冲
  */
@@ -121,6 +117,17 @@ typedef NS_ENUM(NSInteger, MCPlayerState) {
 @property (assign, nonatomic) CGFloat volume;
 
 /**
+ 音频总时间
+ */
+@property (assign, nonatomic) CGFloat duration;
+
+/**
+ 音频当前时间
+ */
+@property (assign, nonatomic) CGFloat currentTime;
+
+
+/**
  创建播放器
  
  @return 返回的不是单例
@@ -165,18 +172,4 @@ typedef NS_ENUM(NSInteger, MCPlayerState) {
  @param seconds 秒
  */
 - (void)seekToTime:(CGFloat)seconds;
-
-/**
- 获取音频总时间
- 
- @return-
- */
-- (CGFloat)getDuration;
-
-/**
- 获取音频当前时间
- 
- @return-
- */
-- (CGFloat)getCurrentTime;
 @end

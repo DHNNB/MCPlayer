@@ -43,23 +43,7 @@
         [self.dataArray addObject:model];
     }
     [self.videoTableView reloadData];
-//    if (self.dataArray.count == 0) {
-//        return;
-//    }
-//    MCVideoModel * model = self.dataArray.firstObject;
-//    [self getVideoPreViewImageWithAtTime:0 size:CGSizeMake(180, 180) model:model];
 }
-
-//- (void)reloadRowCell:(MCVideoModel * )model
-//{
-//    NSInteger row = [self.dataArray indexOfObject:model];
-//    NSIndexPath * indexPath = [NSIndexPath indexPathForRow:row inSection:0];
-//    [self.videoTableView reloadRowsAtIndexPaths:@[indexPath] withRowAnimation:UITableViewRowAnimationNone];
-//    if (row + 1 < self.dataArray.count) {
-//        MCVideoModel * model = self.dataArray[row + 1];
-//        [self getVideoPreViewImageWithAtTime:0 size:CGSizeMake(180, 180) model:model];
-//    }
-//}
 - (CGFloat)tableView:(UITableView *)tableView heightForRowAtIndexPath:(NSIndexPath *)indexPath
 {
     return 180;
@@ -121,30 +105,6 @@
     [super didReceiveMemoryWarning];
     // Dispose of any resources that can be recreated.
 }
-//- (void)getVideoPreViewImageWithAtTime:(float)atTime size:(CGSize)size model:(MCVideoModel * )model
-//{
-//    dispatch_async(global_quque, ^{
-//        AVURLAsset *asset = [[AVURLAsset alloc] initWithURL:[NSURL URLWithString:model.url] options:nil];
-//        self.generator = [[AVAssetImageGenerator alloc] initWithAsset:asset];
-//        self.generator.appliesPreferredTrackTransform = YES;
-//        self.generator.requestedTimeToleranceAfter = kCMTimeZero;
-//        self.generator.requestedTimeToleranceBefore = kCMTimeZero;
-//        CMTime time = CMTimeMakeWithSeconds(atTime, 600);
-//        AVAssetImageGeneratorCompletionHandler handler =
-//        ^(CMTime requestedTime, CGImageRef im, CMTime actualTime, AVAssetImageGeneratorResult result, NSError *error){
-//            if (result == AVAssetImageGeneratorSucceeded){
-//                model.image = [[UIImage alloc] initWithCGImage:im];
-//                NSLog(@"成功了");
-//            }else if (result == AVAssetImageGeneratorFailed){
-//                NSLog(@"失败了");
-//            }
-//            [self performSelectorOnMainThread:@selector(reloadRowCell:) withObject:model waitUntilDone:YES];
-//        };
-//        self.generator.maximumSize = size;
-//        [self.generator generateCGImagesAsynchronouslyForTimes:
-//         [NSArray arrayWithObject:[NSValue valueWithCMTime:time]] completionHandler:handler];
-//    });
-//}
 - (void)playViewPan:(UIPanGestureRecognizer * )pan
 {
     CGPoint location = [pan locationInView:pan.view.superview];
