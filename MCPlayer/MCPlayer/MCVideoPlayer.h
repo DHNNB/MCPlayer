@@ -37,7 +37,7 @@ typedef NS_ENUM(NSInteger, MCPanDirection){
 /**
  将视频放在这个view上边(相关操作也在view上这样灵活)  必须传入
  */
-@property (retain , nonatomic) UIView * playerView;
+@property (weak , nonatomic) UIView * playerView;
 /**
  一些 UI操作
  */

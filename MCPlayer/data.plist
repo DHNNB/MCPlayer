@@ -4,6 +4,12 @@
 <array>
 	<dict>
 		<key>name</key>
+		<string>YK</string>
+		<key>url</key>
+		<string>http://qqpull.inke.cn/live/1502429277985188.flv?ikHost=tx&amp;ikOp=0&amp;codecInfo=8192</string>
+	</dict>
+	<dict>
+		<key>name</key>
 		<string>凉凉</string>
 		<key>url</key>
 		<string>https://he.yinyuetai.com/uploads/videos/common/82F00159833EA6BD378936FF1242C975.mp4</string>

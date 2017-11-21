@@ -36,10 +36,10 @@
     [self.palyer playMediaWithUrl:url tempPath:nil desPath:nil delegate:self];
 }
 
-- (void)playerPlayTimeSecond:(CGFloat)seconds currentStr:(NSString *)currentString withResidueStr:(NSString *)residueStr
+- (void)playerPlayTimeSecond:(CGFloat)seconds
 {
-    self.currentTimeLabel.text = currentString;
-    self.durationLabel.text = residueStr;
+    self.currentTimeLabel.text = [self getTimeMinStr:seconds];
+    self.durationLabel.text = [self getTimeMinStr:self.palyer.duration];
     self.slider.value = seconds;
 }
 - (void)playerLoadingValue:(double)cache duration:(CGFloat)duration
@@ -53,6 +53,19 @@
         _palyer.backgroundPlay = NO;//后台播放
     }
     return _palyer;
+}
+- (NSString *)getTimeMinStr:(NSInteger)second
+{
+    NSInteger minute =second/60;
+    NSString *minuteStr=nil;
+    if (minute>=100){
+        minuteStr = [NSString stringWithFormat:@"%03d",minute];
+    }else{
+        minuteStr = [NSString stringWithFormat:@"%02d",minute];
+    }
+    NSString *secondStr = [NSString stringWithFormat:@"%02d",second%60];
+    NSString *timeStr = [NSString stringWithFormat:@"%@:%@",minuteStr,secondStr];
+    return timeStr;
 }
 
 @end

@@ -106,6 +106,7 @@
     if ([[[UIDevice currentDevice]systemVersion] floatValue] >= 9.0){
         playerItem.canUseNetworkResourcesForLiveStreamingWhilePaused = YES;
     }
+    playerItem.audioTimePitchAlgorithm = AVAudioTimePitchAlgorithmSpectral;
     self.player = [AVPlayer playerWithPlayerItem:playerItem];
     if ([[[UIDevice currentDevice]systemVersion] floatValue] >= 10.0){
         self.player.automaticallyWaitsToMinimizeStalling = NO;
@@ -393,8 +394,7 @@
 - (void)playerBuffer
 {
     dispatch_async(main_queue, ^{
-        if (_delegate && [_delegate respondsToSelector:@selector(playerBuffer)])
-        {
+        if (_delegate && [_delegate respondsToSelector:@selector(playerBuffer)]){
             [_delegate playerBuffer];
         }
     });
@@ -473,18 +473,5 @@
     return self.playerState == MCPlayerStateStopped;
 }
 
-- (NSString *)getTimeMinStr:(NSInteger)second
-{
-    NSInteger minute =second/60;
-    NSString *minuteStr=nil;
-    if (minute>=100){
-        minuteStr = [NSString stringWithFormat:@"%03d",minute];
-    }else{
-        minuteStr = [NSString stringWithFormat:@"%02d",minute];
-    }
-    NSString *secondStr = [NSString stringWithFormat:@"%02d",second%60];
-    NSString *timeStr = [NSString stringWithFormat:@"%@:%@",minuteStr,secondStr];
-    return timeStr;
-}
 
 @end
