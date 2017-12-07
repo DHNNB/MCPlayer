@@ -8,7 +8,7 @@
 
 #import <Foundation/Foundation.h>
 #import <AVFoundation/AVFoundation.h>
-
+#import "MCCost.h"
 @protocol MCResourceLoadDelegate <NSObject>
 
 @optional
@@ -34,13 +34,6 @@
  @param desPath 路径
  */
 - (void)downloadSuccessWithDesPath:(NSString * )desPath;
-
-/**
- 下载失败
- 
- @param msg 失败信息
- */
-- (void)downloadFailMsg:(NSString * )msg;
 @end
 static NSString * KKScheme = @"MCStreaming";
 

@@ -203,11 +203,9 @@
         [self.delegate downloadSuccessWithDesPath:self.desPath];
     }
 }
-- (void)didFailLoadingWithTask:(MCDonwloadTask *)task WithErrorStr:(NSString *  )errorStr
+- (void)didFailLoadingWithTask:(MCDonwloadTask *)task WithError:(NSError * )error;
 {
-    if ([self.delegate respondsToSelector:@selector(downloadFailMsg:)] && self.delegate) {
-        [self.delegate downloadFailMsg:errorStr];
-    }
+  
 }
 - (void)taskCancelWithTask:(MCDonwloadTask * )task
 {

@@ -9,7 +9,7 @@
 #import <Foundation/Foundation.h>
 #import <UIKit/UIKit.h>
 #import <AVFoundation/AVFoundation.h>
-
+#import "MCCost.h"
 @protocol MCPlayerDelegate <NSObject>
 @optional
 /**
@@ -18,7 +18,7 @@
  @param cache 缓冲进度
  @param duration 音频总时间
  */
-- (void)playerLoadingValue:(double)cache
+- (void)playerLoadingValue:(CGFloat)cache
                   duration:(CGFloat)duration;
 
 /**

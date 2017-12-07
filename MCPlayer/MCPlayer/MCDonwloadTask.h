@@ -15,7 +15,7 @@
 - (void)didReceiveResponseWithtask:(MCDonwloadTask *)task length:(NSUInteger)ideoLength mimeType:(NSString *)mimeType;
 - (void)didReceiveVideoDataWithTask:(MCDonwloadTask *)task cacheProgress:(CGFloat)progress;
 - (void)didFinishLoadingWithTask:(MCDonwloadTask *)task;
-- (void)didFailLoadingWithTask:(MCDonwloadTask *)task WithErrorStr:(NSString *  )errorStr;
+- (void)didFailLoadingWithTask:(MCDonwloadTask *)task WithError:(NSError * )error;
 - (void)taskCancelWithTask:(MCDonwloadTask * )task;
 @end
 

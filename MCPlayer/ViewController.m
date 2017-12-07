@@ -8,7 +8,6 @@
 
 #import "ViewController.h"
 #import "MCPlayer.h"
-#import "MCCacheRecord.h"
 @interface ViewController () <MCPlayerDelegate>
 @property (weak, nonatomic) IBOutlet UISlider *slider;
 @property (weak, nonatomic) IBOutlet UILabel *currentTimeLabel;
@@ -21,7 +20,7 @@
 
 - (void)viewDidLoad {
     [super viewDidLoad];
-    [MCCacheRecord saveRecordFileWithRange:NSMakeRange(10, 20)];
+//    [MCCacheRecord saveRecordFileWithRange:NSMakeRange(10, 20)];
 
 }
 
@@ -42,7 +41,7 @@
     self.durationLabel.text = [self getTimeMinStr:self.palyer.duration];
     self.slider.value = seconds;
 }
-- (void)playerLoadingValue:(double)cache duration:(CGFloat)duration
+- (void)playerLoadingValue:(CGFloat)cache duration:(CGFloat)duration
 {
     self.slider.maximumValue = duration;
 }

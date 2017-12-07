@@ -23,6 +23,11 @@
 @property (retain, nonatomic) NSURLSessionDataTask * sessionDataTask;
 @property (assign, nonatomic) NSInteger taskTimes;
 @property (assign, nonatomic) NSInteger limitBuffer;
+/**
+ 失败的 第-次  第二次不删除文件 数据是连续的
+ */
+@property (assign, nonatomic) NSInteger isContinue;
+
 @end
 
 @implementation MCDonwloadTask
@@ -57,6 +62,10 @@
     if (self.sessionDataTask) {
         [self.sessionDataTask cancel];
         self.sessionDataTask = nil;
+    }else{
+        dispatch_async(main_queue, ^{
+            [NSObject cancelPreviousPerformRequestsWithTarget:self selector:@selector(requestAgain) object:nil];
+        });
     }
     _url = url;
     _offset = offset;
@@ -130,35 +139,24 @@
 {
     if (error) {
         if (error.code == -999) {//主动取消的
-            return;
-        }else if (error.code == -1001 && !self.isOnce) {
-            self.isOnce = YES;
-            [self setUrl:_url offset:_offset];
-        }else{
-            NSString * str = @"加载失败";
-            switch (error.code) {
-                case -1001:
-                    str = @"连接超时";
-                    break;
-                case -1009:
-                    str = @"网络异常";
-                    break;
-                case -1003:
-                    str = @"找不到服务器";
-                    break;
-                case -1004:
-                    str = @"服务器错误";
-                    break;
-                default:
-                    break;
-            }
             dispatch_async(main_queue, ^{
-                if ([self.delegate respondsToSelector:@selector(didFailLoadingWithTask:WithErrorStr:)]) {
-                    [self.delegate didFailLoadingWithTask:self WithErrorStr:str];
+                [NSObject cancelPreviousPerformRequestsWithTarget:self selector:@selector(requestAgain) object:nil];
+            });
+            return;
+        }else{
+            dispatch_async(main_queue, ^{
+                [self performSelector:@selector(requestAgain) withObject:nil afterDelay:5];
+            });
+            dispatch_async(main_queue, ^{
+                if ([self.delegate respondsToSelector:@selector(didFailLoadingWithTask:WithError:)]) {
+                    [self.delegate didFailLoadingWithTask:self WithError:error];
                 }
             });
         }
     }else{
+        dispatch_async(main_queue, ^{
+            [NSObject cancelPreviousPerformRequestsWithTarget:self selector:@selector(requestAgain) object:nil];
+        });
         NSDictionary *fileAttributes=[[NSFileManager defaultManager] attributesOfItemAtPath:self.tempPath error:nil];
         long long len =[[fileAttributes objectForKey:NSFileSize] longLongValue];
         if (self.videoLength == len && len && self.videoLength) {
@@ -183,6 +181,25 @@
         }
     }
 }
+- (void)requestAgain
+{
+    if (self.downLoadingOffset) {
+        NSLog(@"连续的");
+        self.taskTimes = 0;//不删除 临时文件 因为上次请求成功 下载数据是连接的
+        self.isContinue = YES;
+        [self setUrl:_url offset:self.downLoadingOffset + self.offset + 1];
+    }else{
+        // 这个有两种情况 1.数据不连续的 不做处理 2.数据连续的（走完上边的downLoadingOffset 不为0 失败 来的下边）
+        if (self.isContinue) {
+            self.taskTimes = 0;
+            NSLog(@"连续的isContinue");
+        }else{
+            NSLog(@"不连续的");
+        }
+        [self setUrl:_url offset:self.offset];
+    }
+}
+
 #pragma mark - 剩余空间
 - (BOOL)checkDiskFreeSize:(long long)length{
     unsigned long long freeDiskSize = [self getDiskFreeSize];

@@ -27,6 +27,8 @@
 @property (assign, nonatomic) BOOL stopRefresh;
 @property (retain, nonatomic) MCResourceLoader * resourceLoader;
 @property (assign, nonatomic) CGFloat downloadProgress;
+//已经更改了 rate
+@property (assign, nonatomic) BOOL onceRate;
 @end
 
 @implementation MCPlayer
@@ -74,7 +76,6 @@
 
 - (void)playMediaWithUrl:(NSString *)url tempPath:(NSString * )tempPath desPath:(NSString * )desPath delegate:(id)delegate
 {
-    url = [url stringByAddingPercentEscapesUsingEncoding:NSUTF8StringEncoding];
     BOOL isLocal = NO;
     NSFileManager * fileManager = [NSFileManager defaultManager];
     if(!tempPath){
@@ -88,14 +89,24 @@
     }
     [self removePlayerKVO];
     [self cancleDownload];
-    [self playerBuffer];
     self.stopRefresh = NO;
     self.delegate = delegate;
+    self.playerState = MCPlayerStateBuffering;
+    dispatch_async(main_queue, ^{
+        if (_delegate && [_delegate respondsToSelector:@selector(playerBuffer)]){
+            [_delegate playerBuffer];
+        }
+    });
+    self.downloadProgress = 0;
     NSURLComponents * components = nil;
     if(isLocal){
         components = [[NSURLComponents alloc] initWithURL:[NSURL fileURLWithPath:desPath] resolvingAgainstBaseURL:NO];
-    }else{
+    }else if(url){
+        url = [url stringByAddingPercentEscapesUsingEncoding:NSUTF8StringEncoding];
         components = [[NSURLComponents alloc] initWithURL:[NSURL URLWithString:url] resolvingAgainstBaseURL:NO];
+    }else{
+        [self failMediaWithMsg:@"音频播放失败"];
+        return;
     }
     components.scheme = KKScheme;
     self.resourceLoader = [[MCResourceLoader alloc]initWithUrl:url desPath:desPath cachePath:tempPath isLocal:isLocal];
@@ -141,10 +152,7 @@
         [_delegate downloadSuccess];
     }
 }
-- (void)downloadFailMsg:(NSString * )msg;
-{
-    [self failMediaWithMsg:msg];
-}
+
 - (void)loadingAfterPlayMedia
 {
     if (self.isPlaying) {
@@ -203,12 +211,16 @@
     [self.player replaceCurrentItemWithPlayerItem:nil];
     self.player = nil;
     self.timeObserver = nil;
+    self.stopRefresh = NO;
+    self.isPlayEnd = NO;
+
     }
 }
 - (void)moviePlayDidEnd:(NSNotification * )notification
 {
     AVPlayerItem * playerItem = notification.object;
     if(playerItem != self.player.currentItem || self.isPlayEnd) return; //别的播放器调用  self.isPlayEnd 防止调用多次
+    self.isPlayEnd = YES;
     CGFloat duration = CMTimeGetSeconds(self.player.currentItem.duration);
     if (duration) {
         dispatch_async(main_queue, ^{
@@ -219,7 +231,6 @@
     }else{
         [self failMediaWithMsg:@"播放失败"];
     }
-    self.isPlayEnd = YES;
     NSLog(@"播放结束 %f",duration);
 }
 
@@ -258,6 +269,9 @@
         if ( (self.playerState == MCPlayerStateBuffering) &&  (timeInterval + 8 >= duration || timeInterval - 10 >= currentTime)) //预防网速慢 无法播放 加减时间自己设置
         {
             play = YES;
+            if (self.playerState == MCPlayerStateBuffering) {
+                [self playerBufferFull];
+            }
             NSLog(@"缓冲播放了！！！");
         }
         if (!self.isLocal) { //不是本地
@@ -279,29 +293,32 @@
     }else if ([keyPath isEqualToString:@"playbackLikelyToKeepUp"]){
         if (self.player.currentItem.playbackLikelyToKeepUp &&self.playerState == MCPlayerStateBuffering){
             [self playerBufferFull];
-            if (self.isPlaying && !self.isPlayEnd) {
-                play = YES;
-            }
+            play = YES;
             NSLog(@"playbackLikelyToKeepUp");
         }
     }else if ([keyPath isEqualToString:@"playbackBufferFull"]){
         if(self.player.currentItem.playbackBufferFull){
             [self playerBufferFull];
         }
+        play = YES;
         NSLog(@"playbackBufferFull");
     }else if ([keyPath isEqualToString:@"rate"]){
-        CGFloat rate = self.player.rate;
-        if (rate > 0 && self.player){
-            if (rate + 0.1 < self.playRate || rate - 0.1 > self.playRate){//播放视频的时候有问题 允许有0.1的误差
-                [self.player setRate:self.playRate];
+        if (self.player) {
+            CGFloat rate = self.player.rate;
+            if (rate > 0){
+                if ((rate + 0.1 < self.playRate || rate - 0.1 > self.playRate) && !self.onceRate){//播放视频的时候有问题 允许有0.1的误差
+                    self.onceRate = YES;
+                    [self.player setRate:self.playRate];
+                }
+                self.playerState = MCPlayerStatePlaying;
             }
-            self.playerState = MCPlayerStatePlaying;
         }    }
-    if (play){
-        if(self.playerState == MCPlayerStatePause){
-            [self.player pause];
-        }else{
+    if (play && _player){
+        if (self.isPlaying && self.isPlayEnd == NO) {
+            if(self.player.rate > 0.2) return;
             [self playMedia];
+        }else{
+            [self.player pause];
         }
     }
 }
@@ -338,6 +355,7 @@
     if (self.isStop) return;
     self.stopRefresh = NO;
     if (self.player) {
+        self.onceRate = NO;
         [self.player play];
     }else{
         return;
@@ -368,7 +386,6 @@
     [self cancleDownload];
     [self.player.currentItem cancelPendingSeeks];
     [self.player.currentItem.asset cancelLoading];
-    self.stopRefresh = NO;
     [self removePlayerKVO];
     self.playerState = MCPlayerStateStopped;
     dispatch_async(main_queue, ^{
@@ -381,9 +398,7 @@
 {
     self.stopRefresh = NO;
     [self cancleDownload];
-    if(self.player){
-        [self removePlayerKVO];
-    }
+    [self removePlayerKVO];
     dispatch_async(main_queue, ^{
         if (_delegate && [_delegate respondsToSelector:@selector(playerFailWithMsg:)]){
             [_delegate playerFailWithMsg:msg];
@@ -393,12 +408,15 @@
 }
 - (void)playerBuffer
 {
-    dispatch_async(main_queue, ^{
-        if (_delegate && [_delegate respondsToSelector:@selector(playerBuffer)]){
-            [_delegate playerBuffer];
-        }
-    });
-    self.playerState = MCPlayerStateBuffering;
+    [self.player pause];
+    if (!self.isPause) {
+        dispatch_async(main_queue, ^{
+            if (_delegate && [_delegate respondsToSelector:@selector(playerBuffer)]){
+                [_delegate playerBuffer];
+            }
+        });
+        self.playerState = MCPlayerStateBuffering;
+    }
 }
 - (void)playerBufferFull
 {
@@ -411,10 +429,13 @@
 //设置播放速率
 - (void)setPlayerRate:(CGFloat)value
 {
-    self.playRate=value;
-    if(self.playerState == MCPlayerStatePlaying){
-        if (self.player) {
+    self.playRate = value;
+    if (self.player) {
+        if(self.playerState == MCPlayerStatePlaying){
+            self.onceRate = YES;
             [self.player setRate:value];
+        }else{
+            self.onceRate = NO;
         }
     }
 }
@@ -423,6 +444,7 @@
 {
     [NSObject cancelPreviousPerformRequestsWithTarget:self selector:@selector(setStopRefresh) object:nil];
     self.stopRefresh = YES;
+    self.onceRate = NO;
     if (self.player) {
         if (self.player.currentItem.status != AVPlayerItemStatusReadyToPlay) {
             
