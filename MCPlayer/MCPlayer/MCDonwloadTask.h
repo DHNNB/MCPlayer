@@ -32,9 +32,9 @@
 - (void)cancel;
 @end
 
-@interface KKDownloadOperationQueue : NSObject
+@interface MCDownloadOperationQueue : NSObject
 
 @property (retain, nonatomic) NSOperationQueue * queue;
-+ (KKDownloadOperationQueue * )shareQueue;
++ (MCDownloadOperationQueue * )shareQueue;
 @end
 

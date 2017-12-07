@@ -220,19 +220,19 @@
 - (NSURLSession *)session {
     if (!_session) {
         NSURLSessionConfiguration *configuration = [NSURLSessionConfiguration defaultSessionConfiguration];
-        _session = [NSURLSession sessionWithConfiguration:configuration delegate:self delegateQueue:[KKDownloadOperationQueue shareQueue].queue];
+        _session = [NSURLSession sessionWithConfiguration:configuration delegate:self delegateQueue:[MCDownloadOperationQueue shareQueue].queue];
     }
     return _session;
 }
 @end
-@implementation KKDownloadOperationQueue
+@implementation MCDownloadOperationQueue
 
-+ (KKDownloadOperationQueue * )shareQueue
++ (MCDownloadOperationQueue * )shareQueue
 {
     static dispatch_once_t onceToken;
-    static KKDownloadOperationQueue * queue;
+    static MCDownloadOperationQueue * queue;
     dispatch_once(&onceToken, ^{
-        queue = [[KKDownloadOperationQueue alloc]init];
+        queue = [[MCDownloadOperationQueue alloc]init];
     });
     return queue;
 }
