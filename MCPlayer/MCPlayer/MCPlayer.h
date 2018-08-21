@@ -99,7 +99,7 @@ typedef NS_ENUM(NSInteger, MCPlayerState) {
 /**
  是否播放
  */
-@property (assign, nonatomic) BOOL isPlaying;
+@property (assign, nonatomic) BOOL isPlay;
 
 /**
  是否暂停
@@ -165,11 +165,10 @@ typedef NS_ENUM(NSInteger, MCPlayerState) {
  */
 - (void)setPlayerRate:(CGFloat)value;
 
-
 /**
- 设置播放时间
- 
+ 时间设置
  @param seconds 秒
+ @param play 是否开始播放
  */
-- (void)seekToTime:(CGFloat)seconds;
+- (void)seekToTime:(CGFloat)seconds play:(BOOL)play;
 @end

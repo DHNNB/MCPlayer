@@ -79,16 +79,18 @@
     if (startOffset < self.task.offset) {
         return NO;
     }
+    NSInteger offset = (NSInteger)startOffset - self.task.offset;
     NSUInteger canReadLength = self.task.downLoadingOffset - ((NSInteger)startOffset - self.task.offset);
     NSUInteger respondLength = MIN((NSUInteger)dataRequest.requestedLength, canReadLength);
-    NSData * data = nil;
-    @try {
         NSData * filedata = [NSData dataWithContentsOfURL:[NSURL fileURLWithPath:self.cachePath] options:NSDataReadingMappedIfSafe error:nil];
-        NSRange range = NSMakeRange((NSUInteger)startOffset- self.task.offset,respondLength);
-        data = [filedata subdataWithRange:range];
-    } @catch (NSException *exception) {
-        NSLog(@"读取文件失败");
+    NSRange range = NSMakeRange(offset,respondLength);
+    long long len = filedata.length;
+    if (len <= offset){
+        return NO;
+    }else if (len < offset + respondLength) {
+        range = NSMakeRange(offset,len - offset);
     }
+    NSData * data = [filedata subdataWithRange:range];
     [dataRequest respondWithData:data];
     long long endOffset = startOffset + dataRequest.requestedLength;
     BOOL didRespondFully = (self.task.offset + self.task.downLoadingOffset) >= endOffset;

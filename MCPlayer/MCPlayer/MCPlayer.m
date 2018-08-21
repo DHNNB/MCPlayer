@@ -29,6 +29,10 @@
 @property (assign, nonatomic) CGFloat downloadProgress;
 //已经更改了 rate
 @property (assign, nonatomic) BOOL onceRate;
+/**
+ 快进时间
+ */
+@property (assign, nonatomic) NSInteger seekTime;
 @end
 
 @implementation MCPlayer
@@ -69,7 +73,7 @@
     if (self.backgroundPlay) {
         return;
     }
-    if (self.isPlaying) {
+    if (self.isPlay) {
         [self pauseMedia];
     }
 }
@@ -90,6 +94,7 @@
     [self removePlayerKVO];
     [self cancleDownload];
     self.stopRefresh = NO;
+    self.seekTime = 0;
     self.delegate = delegate;
     self.playerState = MCPlayerStateBuffering;
     dispatch_async(main_queue, ^{
@@ -155,7 +160,7 @@
 
 - (void)loadingAfterPlayMedia
 {
-    if (self.isPlaying) {
+    if (self.isPlay) {
         [self playMedia];
     }
 }
@@ -211,10 +216,9 @@
     [self.player replaceCurrentItemWithPlayerItem:nil];
     self.player = nil;
     self.timeObserver = nil;
+    }
     self.stopRefresh = NO;
     self.isPlayEnd = NO;
-
-    }
 }
 - (void)moviePlayDidEnd:(NSNotification * )notification
 {
@@ -244,6 +248,9 @@
             case AVPlayerItemStatusReadyToPlay:
             {
                 NSLog(@"准备好了 开始播放");
+                if (self.seekTime) {
+                    [self seekToTime:self.seekTime play:self.isPlay];
+                }
                 play = YES;
             }
                 break;
@@ -314,7 +321,7 @@
             }
         }    }
     if (play && _player){
-        if (self.isPlaying && self.isPlayEnd == NO) {
+        if (self.isPlay && self.isPlayEnd == NO) {
             if(self.player.rate > 0.2) return;
             [self playMedia];
         }else{
@@ -396,7 +403,6 @@
 }
 - (void)failMediaWithMsg:(NSString * )msg
 {
-    self.stopRefresh = NO;
     [self cancleDownload];
     [self removePlayerKVO];
     dispatch_async(main_queue, ^{
@@ -440,16 +446,19 @@
     }
 }
 //跳到某一时间
-- (void)seekToTime:(CGFloat)seconds
+- (void)seekToTime:(CGFloat)seconds play:(BOOL)play
 {
     [NSObject cancelPreviousPerformRequestsWithTarget:self selector:@selector(setStopRefresh) object:nil];
     self.stopRefresh = YES;
     self.onceRate = NO;
     if (self.player) {
         if (self.player.currentItem.status != AVPlayerItemStatusReadyToPlay) {
-            
+            self.seekTime = seconds;
+            self.stopRefresh = NO;
         }else {
+            self.seekTime = seconds;
             [self.player seekToTime:CMTimeMakeWithSeconds(seconds,self.player.currentTime.timescale) toleranceBefore:kCMTimeZero toleranceAfter:kCMTimeZero completionHandler:^(BOOL finished) {
+                self.seekTime = 0;
                 if (self.stopRefresh) {
                     [self performSelector:@selector(setStopRefresh) withObject:nil afterDelay:0.1];
                 }
@@ -457,15 +466,13 @@
             }];
         }
         //开始播放
-        [self.player play];
-    }else{
-        return;
-    }
-    dispatch_async(main_queue, ^{
-        if (_delegate && [_delegate respondsToSelector:@selector(playerPlay)]){
-            [_delegate playerPlay];
+        if (play && self.isPause) {
+            [self playMedia];
+        }else if(!play &&!self.isPause){
+            [self pauseMedia];
         }
-    });
+        
+    }
 }
 - (CGFloat)duration
 {
@@ -482,7 +489,7 @@
         self.resourceLoader = nil;
     }
 }
-- (BOOL)isPlaying
+- (BOOL)isPlay
 {
     return self.playerState == MCPlayerStatePlaying || self.playerState == MCPlayerStateBuffering;
 }

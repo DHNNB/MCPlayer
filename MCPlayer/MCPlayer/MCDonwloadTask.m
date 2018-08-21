@@ -95,9 +95,6 @@
     self.isOnce = NO;
     NSHTTPURLResponse *httpResponse = (NSHTTPURLResponse*)response;
     self.videoLength = [[[httpResponse.allHeaderFields[@"Content-Range"] componentsSeparatedByString:@"/"] lastObject] longLongValue];
-    if (self.videoLength == 0) {
-        self.videoLength = response.expectedContentLength;
-    }
     self.mimeType = response.MIMEType;
     if (![self checkDiskFreeSize:self.videoLength]){
         completionHandler(NSURLSessionResponseCancel);

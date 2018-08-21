@@ -148,7 +148,7 @@
         case UIGestureRecognizerStateEnded:{ // 移动停止
             switch (self.panDirection) {
                 case MCPanDirectionHorizontal:{
-                    [self seekToTime:self.sumTime];
+                    [self seekToTime:self.sumTime play:YES];
                     break;
                 }
                 case MCPanDirectionVertical:{
@@ -187,7 +187,7 @@
     if (self.lockScreen) {
         return;
     }
-    if (self.isPlaying) {
+    if (self.isPlay) {
         [self pauseMedia];
     }else if(self.isPause){
         [self playMedia];
