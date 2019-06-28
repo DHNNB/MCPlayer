@@ -1,0 +1,16 @@
+PODS:
+  - MCPlayer (1.0.0)
+
+DEPENDENCIES:
+  - MCPlayer (from `../`)
+
+EXTERNAL SOURCES:
+  MCPlayer:
+    :path: "../"
+
+SPEC CHECKSUMS:
+  MCPlayer: b208b3e3779f8c16eb5fbcb1bccd159841516ad9
+
+PODFILE CHECKSUM: 7d46aa93afa8bb4cb0e3b8289d04351aeb39c41f
+
+COCOAPODS: 1.7.2

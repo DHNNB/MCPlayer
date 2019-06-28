@@ -1,0 +1,6 @@
+framework module MCPlayer {
+  umbrella header "MCPlayer-umbrella.h"
+
+  export *
+  module * { export * }
+}

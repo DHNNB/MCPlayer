@@ -1,0 +1,6 @@
+framework module Pods_MCPlayer_Tests {
+  umbrella header "Pods-MCPlayer_Tests-umbrella.h"
+
+  export *
+  module * { export * }
+}
